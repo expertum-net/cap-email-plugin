@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "SAP CAP plugin for annotation-driven email automation",
   "type": "module",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/MVansteenhuyse/cap-email.git"
@@ -22,6 +22,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "git config core.hooksPath .githooks"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "peerDependencies": {
     "@sap/cds": ">=9"
