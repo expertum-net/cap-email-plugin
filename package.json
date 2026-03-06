@@ -16,7 +16,12 @@
   "scripts": {
     "build": "tsc",
     "watch": "npx cds watch",
-    "test": "npx cds-tsx test"
+    "test": "npx cds-tsx test",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "git config core.hooksPath .githooks"
   },
   "peerDependencies": {
     "@sap/cds": ">=9"
@@ -26,6 +31,8 @@
     "@cap-js/cds-types": "^0.15.0",
     "@sap/cds-dk": "^9.7.2",
     "@types/node": "^24.0.0",
+    "oxlint": "^1.51.0",
+    "prettier": "^3.8.1",
     "tsx": "^4",
     "typescript": "^5"
   },

@@ -1,0 +1,17 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "import"],
+  "rules": {
+    "no-unused-vars": "error",
+    "no-console": "error",
+    "eqeqeq": "error",
+    "no-var": "error",
+    "prefer-const": "error",
+    "no-debugger": "error",
+    "no-template-curly-in-string": "error",
+    "no-self-compare": "error",
+    "typescript/no-explicit-any": "error",
+    "typescript/no-non-null-assertion": "warn"
+  },
+  "ignorePatterns": ["node_modules", "gen", "dist", "@cds-models"]
+}
