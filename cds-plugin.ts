@@ -1,4 +1,4 @@
-import cds from '@sap/cds'
-import { registerEmailHandlers } from './lib/plugin.js'
+import cds from "@sap/cds";
+import { registerEmailHandlers } from "./lib/plugin.js";
 
-cds.on('served', registerEmailHandlers)
+cds.on("served", registerEmailHandlers);
