@@ -159,4 +159,4 @@ npm test
 
 ## License
 
-Proprietary
+[MIT](LICENSE)
