@@ -2,7 +2,8 @@
 
 > **Status:** POC
 
-A SAP CAP plugin that provides annotation-driven email automation for CAP entities. Emails are triggered on entity lifecycle events (INSERT, UPDATE) and dispatched via configurable email clients.
+A SAP CAP plugin that provides annotation-driven email automation for CAP entities. Emails are triggered on entity
+lifecycle events (INSERT, UPDATE) and dispatched via configurable email clients.
 
 ## Features
 
@@ -40,6 +41,7 @@ entity Orders {
 ```
 
 That's it for a minimal setup. The plugin defaults to:
+
 - Template: `Orders.html` (convention-based on entity name)
 - Trigger: `INSERT`
 - Recipient: `req.user.email` (from XSUAA context)
@@ -68,29 +70,30 @@ In your application's `package.json`:
       "email": {
         "kind": "graph",
         "email": {
-          "from": "noreply@example.com"
-        }
-      }
-    }
-  }
+          "from": "noreply@example.com",
+        },
+      },
+    },
+  },
 }
 ```
 
-The `graph` kind uses Microsoft Graph API via a BTP destination. Configure the destination with OAuth2ClientCredentials in your BTP subaccount.
+The `graph` kind uses Microsoft Graph API via a BTP destination. Configure the destination with OAuth2ClientCredentials
+in your BTP subaccount.
 
 ## Annotation Reference
 
 All `@email` properties have sensible defaults. Only specify what you need to override.
 
-| Property | Type | Default | Description |
-|---|---|---|---|
-| `enabled` | Boolean | `false` | Activates email for the entity |
-| `template` | String | `{EntityName}` | Template file name (without extension) |
-| `trigger` | Array | `['INSERT']` | Lifecycle events: `INSERT`, `UPDATE` |
-| `condition` | String | _(none)_ | Optional CDS expression for conditional sending |
-| `toField` | String | _(none)_ | Entity field containing recipient email (overrides `req.user.email`) |
-| `subject` | String | _(none)_ | Subject line (supports `{{placeholder}}` syntax) |
-| `rollback` | Boolean | `false` | If `true`, roll back the originating transaction on email failure |
+| Property    | Type    | Default        | Description                                                          |
+| ----------- | ------- | -------------- | -------------------------------------------------------------------- |
+| `enabled`   | Boolean | `false`        | Activates email for the entity                                       |
+| `template`  | String  | `{EntityName}` | Template file name (without extension)                               |
+| `trigger`   | Array   | `['INSERT']`   | Lifecycle events: `INSERT`, `UPDATE`                                 |
+| `condition` | String  | _(none)_       | Optional CDS expression for conditional sending                      |
+| `toField`   | String  | _(none)_       | Entity field containing recipient email (overrides `req.user.email`) |
+| `subject`   | String  | _(none)_       | Subject line (supports `{{placeholder}}` syntax)                     |
+| `rollback`  | Boolean | `false`        | If `true`, roll back the originating transaction on email failure    |
 
 ### Full annotation example
 
@@ -111,9 +114,9 @@ entity Orders { ... }
 
 Providers are registered as CAP service kinds. The plugin ships with:
 
-| Kind | Description |
-|---|---|
-| `basic` | Base email service class |
+| Kind    | Description                                                            |
+| ------- | ---------------------------------------------------------------------- |
+| `basic` | Base email service class                                               |
 | `graph` | Microsoft Graph API via `cds.connect.to()` and BTP Destination Service |
 
 Select your provider in `package.json` under `cds.requires.email.kind`.
@@ -127,7 +130,8 @@ Select your provider in `package.json` under `cds.requires.email.kind`.
 5. Email dispatched asynchronously via the configured provider
 6. Status logged; failures recorded in the plugin-owned log entity
 
-Emails are sent **after** successful operations only. Failed transactions never trigger emails. By default, email failures do not roll back the originating transaction, but this is configurable via `@email.rollback`.
+Emails are sent **after** successful operations only. Failed transactions never trigger emails. By default, email
+failures do not roll back the originating transaction, but this is configurable via `@email.rollback`.
 
 ## Plugin Architecture
 
@@ -149,7 +153,7 @@ npm test
 ### Tech Stack
 
 - TypeScript (ESM)
-- ESLint + Prettier
+- oxlint + Prettier
 - CAP built-in test utilities (`cds.test()`)
 - Conventional Commits (`feat:`, `fix:`, `chore:`, etc.)
 
