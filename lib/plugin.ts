@@ -1,9 +1,8 @@
 import cds from "@sap/cds";
+import { ANNOTATION_PREFIX } from "./constants.js";
 import { type EmailAnnotationConfig, EMAIL_DEFAULTS } from "./types.js";
 
 const LOG = cds.log("email-plugin");
-
-const ANNOTATION_PREFIX = "@email";
 
 export function parseEmailAnnotation(entity: cds.linked.classes.entity): EmailAnnotationConfig | null {
   const objectAnnotation = entity[`${ANNOTATION_PREFIX}`] as Partial<EmailAnnotationConfig> | undefined;
