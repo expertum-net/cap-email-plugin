@@ -1,11 +1,9 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import cds from "@sap/cds";
+import { TEMPLATE_DIR, TEMPLATE_EXT } from "./constants.js";
 
 const LOG = cds.log("email-template");
-
-const TEMPLATE_DIR = "srv/email-templates";
-const TEMPLATE_EXT = ".html";
 
 export function resolveTemplatePath(templateName: string): string {
   return path.join(cds.root, TEMPLATE_DIR, `${templateName}${TEMPLATE_EXT}`);
