@@ -1,3 +1,19 @@
 .claude/
 CLAUDE.md
 PLAN.md
+
+# dependencies
+node_modules/
+package-lock.json
+
+# build output
+gen/
+dist/
+
+# cds-typer generated models
+@cds-models
+
+# environment
+.env
+default-env.json
+.cdsrc-private.json
