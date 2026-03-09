@@ -16,7 +16,7 @@
   "scripts": {
     "build": "tsc",
     "watch": "npx cds watch",
-    "test": "npx cds-tsx test --include '(.test.ts)$' -v",
+    "test": "npx cds-tsx test --include '(.test.ts)$' -v --unmute",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "format": "prettier --write .",
