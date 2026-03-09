@@ -17,7 +17,7 @@ lifecycle events (INSERT, UPDATE) and dispatched via configurable email clients.
 ## Prerequisites
 
 - SAP CAP (`@sap/cds` >= 9)
-- Node.js (version driven by latest CAP requirement)
+- Node.js >= 22 (required for ESM + `@cap-js/cds-test` compatibility)
 - BTP Destination Service (for Microsoft Graph provider)
 
 ## Installation
@@ -178,8 +178,9 @@ npx cds serve
 ### Tech Stack
 
 - TypeScript (ESM)
+- Node.js >= 22
 - oxlint + Prettier
-- CAP built-in test utilities (`cds.test()`)
+- `@cap-js/cds-test` + `@types/jest` (jest-style assertions)
 - Conventional Commits (`feat:`, `fix:`, `chore:`, etc.)
 
 ## License
