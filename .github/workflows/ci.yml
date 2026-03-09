@@ -26,6 +26,7 @@ jobs:
         with:
           node-version: 22
       - run: npm ci
+      - run: cd test/test-app && npm install
       - run: npx @cap-js/cds-typer "*" --outputDirectory @cds-models
       - run: npm test
 
