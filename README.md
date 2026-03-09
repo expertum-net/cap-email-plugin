@@ -51,7 +51,7 @@ That's it for a minimal setup. The plugin defaults to:
 Place an HTML template in your project:
 
 ```
-srv/email-templates/Orders.html
+email-templates/Orders.html
 ```
 
 ```html
