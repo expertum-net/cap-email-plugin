@@ -24,7 +24,7 @@
     "prepare": "git config core.hooksPath .githooks"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "peerDependencies": {
     "@sap/cds": ">=9"
