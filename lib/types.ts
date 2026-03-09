@@ -1,3 +1,10 @@
+export interface EmailPayload {
+  from: string;
+  to: string;
+  subject: string;
+  body: string;
+}
+
 export interface EmailAnnotationConfig {
   enabled: boolean;
   template: string;
