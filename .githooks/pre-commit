@@ -8,6 +8,12 @@ npx oxlint || {
   exit 1
 }
 
+echo "=> TypeScript"
+npx tsc --noEmit || {
+  echo "Type checking failed. Fix errors before committing."
+  exit 1
+}
+
 echo "=> Prettier"
 npx prettier --check . || {
   echo "Formatting issues found. Run 'npm run format' before committing."
