@@ -4,7 +4,6 @@ PLAN.md
 
 # dependencies
 node_modules/
-package-lock.json
 
 # build output
 gen/
