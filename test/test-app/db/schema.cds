@@ -1,6 +1,7 @@
 namespace test.email;
 
 using {cuid, managed} from '@sap/cds/common';
+using from '@expertum/cap-email-plugin/db/email-log';
 
 /**
  * Minimal annotation — tests all defaults.
