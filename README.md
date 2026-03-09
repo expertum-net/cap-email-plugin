@@ -150,6 +150,27 @@ npm install
 npm test
 ```
 
+### Test App
+
+A minimal CAP application lives at `test/test-app/` for testing the plugin end-to-end. It depends on the plugin via
+`"file:../../."` so changes are picked up immediately without publishing.
+
+```
+test/test-app/
+  package.json               ← plugin dependency + basic kind config
+  db/schema.cds              ← Orders (minimal), Tickets (full), Products (control)
+  srv/services.cds           ← TestService exposing all entities
+  email-templates/           ← templates for annotated entities
+```
+
+To run the test app standalone:
+
+```bash
+cd test/test-app
+npm install
+npx cds serve
+```
+
 ### Tech Stack
 
 - TypeScript (ESM)
