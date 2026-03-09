@@ -4,6 +4,7 @@ PLAN.md
 
 # dependencies
 node_modules/
+test/test-app/package-lock.json
 
 # build output
 gen/
