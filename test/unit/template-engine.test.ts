@@ -1,5 +1,4 @@
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import cds from "@sap/cds";
 import { renderTemplate, resolveTemplatePath, loadTemplate } from "../../lib/template-engine.js";
 import { TEMPLATE_DIR, TEMPLATE_EXT } from "../../lib/constants.js";
@@ -45,7 +44,7 @@ describe("resolveTemplatePath", () => {
 
 describe("loadTemplate", () => {
   beforeAll(() => {
-    cds.root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../test-app");
+    cds.root = path.resolve(import.meta.dirname, "../test-app");
   });
 
   it("loads existing template file contents", async () => {
