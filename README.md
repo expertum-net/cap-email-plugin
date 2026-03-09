@@ -59,6 +59,10 @@ email-templates/Orders.html
 <p>Your order {{orderNumber}} has been received.</p>
 ```
 
+Placeholders use `{{fieldName}}` syntax, where `fieldName` matches a field on the annotated entity. When an email is
+triggered, the plugin replaces each placeholder with the corresponding value from the entity record. Missing fields are
+replaced with an empty string.
+
 ### 3. Configure the email provider
 
 In your application's `package.json`:
