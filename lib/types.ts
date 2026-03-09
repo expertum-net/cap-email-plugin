@@ -1,3 +1,14 @@
+export interface EmailPayload {
+  from: string;
+  to: string;
+  subject: string;
+  body: string;
+}
+
+export interface IEmailService {
+  sendEmail(payload: EmailPayload): Promise<void>;
+}
+
 export interface EmailAnnotationConfig {
   enabled: boolean;
   template: string;

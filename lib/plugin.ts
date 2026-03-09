@@ -5,9 +5,10 @@ import { type EmailAnnotationConfig, EMAIL_DEFAULTS } from "./types.js";
 const LOG = cds.log("email-plugin");
 
 export function parseEmailAnnotation(entity: cds.linked.classes.entity): EmailAnnotationConfig | null {
-  const objectAnnotation = entity[`${ANNOTATION_PREFIX}`] as Partial<EmailAnnotationConfig> | undefined;
+  const entityAny = entity as unknown as Record<string, unknown>;
+  const objectAnnotation = entityAny[ANNOTATION_PREFIX] as Partial<EmailAnnotationConfig> | undefined;
 
-  const flatEnabled = entity[`${ANNOTATION_PREFIX}.enabled`] as boolean | undefined;
+  const flatEnabled = entityAny[`${ANNOTATION_PREFIX}.enabled`] as boolean | undefined;
 
   const enabled = objectAnnotation?.enabled ?? flatEnabled ?? EMAIL_DEFAULTS.enabled;
   if (!enabled) return null;
@@ -17,7 +18,7 @@ export function parseEmailAnnotation(entity: cds.linked.classes.entity): EmailAn
 
   const flat: Partial<EmailAnnotationConfig> = {};
   for (const key of Object.keys(EMAIL_DEFAULTS) as (keyof EmailAnnotationConfig)[]) {
-    const value = entity[`${ANNOTATION_PREFIX}.${key}`];
+    const value = entityAny[`${ANNOTATION_PREFIX}.${key}`];
     if (value !== undefined) {
       flat[key] = value as never;
     }
