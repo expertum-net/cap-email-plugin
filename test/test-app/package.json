@@ -1,0 +1,27 @@
+{
+  "name": "cap-email-test-app",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "@expertum/cap-email-plugin": "file:../../."
+  },
+  "cds": {
+    "requires": {
+      "auth": {
+        "[development]": {
+          "users": {
+            "alice": {
+              "roles": [
+                "admin"
+              ],
+              "email": "alice@example.com"
+            }
+          }
+        }
+      },
+      "email": {
+        "kind": "basic"
+      }
+    }
+  }
+}
