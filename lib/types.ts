@@ -3,10 +3,13 @@ export interface EmailPayload {
   to: string;
   subject: string;
   body: string;
+  entityName: string;
+  entityKey: string;
 }
 
 export interface IEmailService {
   sendEmail(payload: EmailPayload): Promise<void>;
+  logEmail(entry: import("#cds-models/expertum/cap/email").EmailLog): Promise<void>;
 }
 
 export interface EmailAnnotationConfig {
