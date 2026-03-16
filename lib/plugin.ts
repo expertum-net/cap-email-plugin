@@ -35,6 +35,28 @@ export function parseEmailAnnotation(entity: cds.linked.classes.entity): EmailAn
   };
 }
 
+export function resolveRecipient(
+  config: EmailAnnotationConfig,
+  data: Record<string, unknown>,
+  req: cds.Request,
+): string | null {
+  let recipient: unknown;
+
+  if (config.toField) {
+    recipient = data[config.toField];
+  } else {
+    recipient = req.user.attr.email;
+  }
+
+  if (typeof recipient === "string" && recipient.length > 0) {
+    return recipient;
+  }
+
+  const source = config.toField ? `toField '${config.toField}'` : "req.user.attr.email";
+  LOG.warn(`No recipient resolved from ${source} — skipping email`);
+  return null;
+}
+
 export function registerEmailHandlers() {
   LOG.info("Registering email handlers...");
   // TODO: Iterate ApplicationService entities and attach after handlers for @email annotated entities
