@@ -1,5 +1,5 @@
 import cds from "@sap/cds";
-import { ANNOTATION_PREFIX } from "./constants.js";
+import { ANNOTATION_PREFIX, EMAIL_PATTERN } from "./constants.js";
 import { type EmailAnnotationConfig, EMAIL_DEFAULTS } from "./types.js";
 
 const LOG = cds.log("email-plugin");
@@ -44,6 +44,8 @@ export function resolveRecipient(
 
   if (config.toField) {
     recipient = data[config.toField];
+  } else if (EMAIL_PATTERN.test(req.user.id)) {
+    recipient = req.user.id;
   } else {
     recipient = req.user.attr.email;
   }
@@ -52,7 +54,7 @@ export function resolveRecipient(
     return recipient;
   }
 
-  const source = config.toField ? `toField '${config.toField}'` : "req.user.attr.email";
+  const source = config.toField ? `toField '${config.toField}'` : "req.user";
   LOG.warn(`No recipient resolved from ${source} — skipping email`);
   return null;
 }
