@@ -7,11 +7,39 @@ export interface EmailPayload {
   body: string;
   entityName: string;
   entityKey: string;
+  saveToSentItems: boolean;
 }
 
 export interface IEmailService {
   sendEmail(payload: EmailPayload): Promise<void>;
   logEmail(entry: EmailLog): Promise<void>;
+}
+
+export interface GraphRecipient {
+  emailAddress: { address: string };
+}
+
+export interface GraphPayload {
+  message: {
+    subject: string;
+    body: { contentType: "HTML"; content: string };
+    toRecipients: GraphRecipient[];
+    importance: "normal";
+  };
+  saveToSentItems: boolean;
+}
+
+export interface GraphMailOptions {
+  credentials: Record<string, unknown>;
+  destination: string;
+  email: { from: string };
+  retryAttempts?: number;
+}
+
+export interface IGraphMailService extends IEmailService {
+  buildGraphPayload(payload: EmailPayload): GraphPayload;
+  formatGraphRecipients(email: string): GraphRecipient[];
+  sendWithRetry(from: string, payload: GraphPayload, attempt?: number): Promise<void>;
 }
 
 export interface EmailAnnotationConfig {
@@ -22,6 +50,7 @@ export interface EmailAnnotationConfig {
   toField: string | undefined;
   subject: string | undefined;
   rollback: boolean;
+  saveToSentItems: boolean;
 }
 
 export const EMAIL_DEFAULTS: EmailAnnotationConfig = {
@@ -32,4 +61,5 @@ export const EMAIL_DEFAULTS: EmailAnnotationConfig = {
   toField: undefined,
   subject: undefined,
   rollback: false,
+  saveToSentItems: true,
 };
