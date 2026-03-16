@@ -1,12 +1,17 @@
+import { EmailLog } from "#cds-models/expertum/cap/email";
+
 export interface EmailPayload {
   from: string;
   to: string;
   subject: string;
   body: string;
+  entityName: string;
+  entityKey: string;
 }
 
 export interface IEmailService {
   sendEmail(payload: EmailPayload): Promise<void>;
+  logEmail(entry: EmailLog): Promise<void>;
 }
 
 export interface EmailAnnotationConfig {
