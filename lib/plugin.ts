@@ -1,5 +1,5 @@
 import cds from "@sap/cds";
-import { ANNOTATION_PREFIX } from "./constants.js";
+import { ANNOTATION_PREFIX, EMAIL_PATTERN } from "./constants.js";
 import { type EmailAnnotationConfig, EMAIL_DEFAULTS } from "./types.js";
 
 const LOG = cds.log("email-plugin");
@@ -33,6 +33,30 @@ export function parseEmailAnnotation(entity: cds.linked.classes.entity): EmailAn
     enabled,
     template: template === EMAIL_DEFAULTS.template ? entityName : template,
   };
+}
+
+export function resolveRecipient(
+  config: EmailAnnotationConfig,
+  data: Record<string, unknown>,
+  req: cds.Request,
+): string | null {
+  let recipient: unknown;
+
+  if (config.toField) {
+    recipient = data[config.toField];
+  } else if (EMAIL_PATTERN.test(req.user.id)) {
+    recipient = req.user.id;
+  } else {
+    recipient = req.user.attr.email;
+  }
+
+  if (typeof recipient === "string" && recipient.length > 0) {
+    return recipient;
+  }
+
+  const source = config.toField ? `toField '${config.toField}'` : "req.user";
+  LOG.warn(`No recipient resolved from ${source} — skipping email`);
+  return null;
 }
 
 export function registerEmailHandlers() {
