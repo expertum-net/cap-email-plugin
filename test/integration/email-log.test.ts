@@ -107,6 +107,7 @@ describe("EmailService.sendEmail", () => {
       body: "<p>Hello</p>",
       entityName: "Orders",
       entityKey: "order-001",
+      saveToSentItems: true,
     });
 
     const [log] = await SELECT.from(EmailLog);
