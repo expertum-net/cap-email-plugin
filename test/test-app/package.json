@@ -14,7 +14,9 @@
               "roles": [
                 "admin"
               ],
-              "email": "alice@example.com"
+              "attr": {
+                "email": "alice@example.com"
+              }
             }
           }
         }
