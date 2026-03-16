@@ -1,3 +1,5 @@
+import { EmailLog } from "#cds-models/expertum/cap/email";
+
 export interface EmailPayload {
   from: string;
   to: string;
@@ -9,7 +11,7 @@ export interface EmailPayload {
 
 export interface IEmailService {
   sendEmail(payload: EmailPayload): Promise<void>;
-  logEmail(entry: import("#cds-models/expertum/cap/email").EmailLog): Promise<void>;
+  logEmail(entry: EmailLog): Promise<void>;
 }
 
 export interface EmailAnnotationConfig {
