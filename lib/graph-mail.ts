@@ -1,7 +1,7 @@
 import cds from "@sap/cds";
 import { EmailLog } from "#cds-models/expertum/cap/email";
 import EmailService from "./basic.js";
-import { DEFAULT_RETRY_ATTEMPTS, RETRYABLE_STATUS_CODES } from "./constants.js";
+import { DEFAULT_RETRY_ATTEMPTS, RETRYABLE_STATUS_CODES, TRIGGER_TO_EVENT } from "./constants.js";
 import type {
   EmailAnnotationConfig,
   EmailPayload,
@@ -18,19 +18,36 @@ export default class GraphMailService extends EmailService implements IGraphMail
   private from!: string;
   private graphApi!: cds.Service;
 
-  /**
-   * Provider hook point for Graph-specific handler registration.
-   * Follows the @cap-js/attachments pattern where each provider overrides
-   * registerHandlers() to control which event hooks are registered on the
-   * ApplicationService. Currently delegates to the base class; override
-   * with Graph-specific handlers as the provider's needs diverge.
-   */
   registerHandlers(
     srv: cds.ApplicationService,
     entity: cds.linked.classes.entity,
     config: EmailAnnotationConfig,
   ): void {
-    super.registerHandlers(srv, entity, config);
+    for (const trigger of config.trigger) {
+      const event = TRIGGER_TO_EVENT[trigger];
+      if (!event) {
+        LOG.warn(`Unknown trigger '${trigger}' on ${entity.name} — skipping`);
+        continue;
+      }
+
+      srv.after(event, entity.name, async (_data: unknown, req: cds.Request) => {
+        const rows = Array.isArray(_data) ? _data : [_data];
+
+        for (const data of rows as Record<string, unknown>[]) {
+          try {
+            const payload = await this.prepareEmail(config, entity, data, req);
+            if (!payload) continue;
+            payload.from = this.from;
+            await this.sendEmail(payload);
+          } catch (err) {
+            LOG.error(`Email failed for ${entity.name}:`, err);
+            if (config.rollback) throw err;
+          }
+        }
+      });
+
+      LOG.info(`Registered ${event} handler for ${entity.name} (graph)`);
+    }
   }
 
   async init(): Promise<void> {
