@@ -12,6 +12,7 @@ export interface EmailPayload {
 }
 
 export interface IEmailService extends cds.Service {
+  registerHandlers(srv: cds.ApplicationService, entity: cds.linked.classes.entity, config: EmailAnnotationConfig): void;
   sendEmail(payload: EmailPayload): Promise<void>;
   logEmail(entry: EmailLog): Promise<void>;
 }

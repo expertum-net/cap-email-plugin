@@ -1,6 +1,8 @@
 import cds from "@sap/cds";
-import { resolveRecipient } from "../../lib/plugin.js";
+import EmailService from "../../lib/basic.js";
 import { EMAIL_DEFAULTS, type EmailAnnotationConfig } from "../../lib/types.js";
+
+const resolveRecipient = EmailService.prototype.resolveRecipient;
 
 const config = (overrides: Partial<EmailAnnotationConfig> = {}): EmailAnnotationConfig => ({
   ...EMAIL_DEFAULTS,
