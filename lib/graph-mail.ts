@@ -18,6 +18,13 @@ export default class GraphMailService extends EmailService implements IGraphMail
   private from!: string;
   private graphApi!: cds.Service;
 
+  /**
+   * Provider hook point for Graph-specific handler registration.
+   * Follows the @cap-js/attachments pattern where each provider overrides
+   * registerHandlers() to control which event hooks are registered on the
+   * ApplicationService. Currently delegates to the base class; override
+   * with Graph-specific handlers as the provider's needs diverge.
+   */
   registerHandlers(
     srv: cds.ApplicationService,
     entity: cds.linked.classes.entity,

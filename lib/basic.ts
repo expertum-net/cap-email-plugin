@@ -52,7 +52,11 @@ export default class EmailService extends cds.Service implements IEmailService {
     }
   }
 
-  resolveRecipient(config: EmailAnnotationConfig, data: Record<string, unknown>, req: cds.Request): string | null {
+  protected resolveRecipient(
+    config: EmailAnnotationConfig,
+    data: Record<string, unknown>,
+    req: cds.Request,
+  ): string | null {
     let recipient: unknown;
 
     if (config.toField) {
@@ -72,7 +76,7 @@ export default class EmailService extends cds.Service implements IEmailService {
     return null;
   }
 
-  private resolveSubject(config: EmailAnnotationConfig, data: Record<string, unknown>): string {
+  protected resolveSubject(config: EmailAnnotationConfig, data: Record<string, unknown>): string {
     if (config.subject) {
       return renderTemplate(config.subject, data);
     }
@@ -80,7 +84,7 @@ export default class EmailService extends cds.Service implements IEmailService {
     return parts[parts.length - 1];
   }
 
-  private resolveEntityKey(entity: cds.linked.classes.entity, data: Record<string, unknown>): string {
+  protected resolveEntityKey(entity: cds.linked.classes.entity, data: Record<string, unknown>): string {
     const keys = Object.keys(entity.keys);
     return keys.map((k) => String(data[k] ?? "")).join(",");
   }
