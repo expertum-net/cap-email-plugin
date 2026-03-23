@@ -42,6 +42,9 @@
     "tsx": "^4",
     "typescript": "^5"
   },
+  "workspaces": [
+    "test/graph-demo-app"
+  ],
   "imports": {
     "#cds-models/*": "./@cds-models/*/index.js"
   },
