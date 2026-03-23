@@ -1,8 +1,6 @@
 import cds from "@sap/cds";
-import { ANNOTATION_PREFIX, EMAIL_PATTERN } from "./constants.js";
-import { type EmailAnnotationConfig, EMAIL_DEFAULTS } from "./types.js";
-
-const LOG = cds.log("email-plugin");
+import { ANNOTATION_PREFIX } from "./constants.js";
+import { type EmailAnnotationConfig, type IEmailService, EMAIL_DEFAULTS } from "./types.js";
 
 export function parseEmailAnnotation(entity: cds.linked.classes.entity): EmailAnnotationConfig | null {
   const entityAny = entity as unknown as Record<string, unknown>;
@@ -35,31 +33,17 @@ export function parseEmailAnnotation(entity: cds.linked.classes.entity): EmailAn
   };
 }
 
-export function resolveRecipient(
-  config: EmailAnnotationConfig,
-  data: Record<string, unknown>,
-  req: cds.Request,
-): string | null {
-  let recipient: unknown;
+export async function registerEmailHandlers() {
+  const emailService = (await cds.connect.to("email")) as IEmailService;
 
-  if (config.toField) {
-    recipient = data[config.toField];
-  } else if (EMAIL_PATTERN.test(req.user.id)) {
-    recipient = req.user.id;
-  } else {
-    recipient = req.user.attr.email;
+  for (const srv of Object.values(cds.services)) {
+    if (!(srv instanceof cds.ApplicationService)) continue;
+
+    for (const entity of Object.values(srv.entities)) {
+      const config = parseEmailAnnotation(entity);
+      if (!config) continue;
+
+      emailService.registerHandlers(srv, entity, config);
+    }
   }
-
-  if (typeof recipient === "string" && recipient.length > 0) {
-    return recipient;
-  }
-
-  const source = config.toField ? `toField '${config.toField}'` : "req.user";
-  LOG.warn(`No recipient resolved from ${source} — skipping email`);
-  return null;
-}
-
-export function registerEmailHandlers() {
-  LOG.info("Registering email handlers...");
-  // TODO: Iterate ApplicationService entities and attach after handlers for @email annotated entities
 }

@@ -6,6 +6,12 @@
     "@expertum/cap-email-plugin": "file:../../."
   },
   "cds": {
+    "log": {
+      "levels": {
+        "email": "info",
+        "email-plugin": "info"
+      }
+    },
     "requires": {
       "auth": {
         "[development]": {
@@ -14,7 +20,9 @@
               "roles": [
                 "admin"
               ],
-              "email": "alice@example.com"
+              "attr": {
+                "email": "alice@example.com"
+              }
             }
           }
         }

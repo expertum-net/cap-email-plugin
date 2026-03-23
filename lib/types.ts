@@ -1,3 +1,4 @@
+import cds from "@sap/cds";
 import { EmailLog } from "#cds-models/expertum/cap/email";
 
 export interface EmailPayload {
@@ -10,7 +11,8 @@ export interface EmailPayload {
   saveToSentItems: boolean;
 }
 
-export interface IEmailService {
+export interface IEmailService extends cds.Service {
+  registerHandlers(srv: cds.ApplicationService, entity: cds.linked.classes.entity, config: EmailAnnotationConfig): void;
   sendEmail(payload: EmailPayload): Promise<void>;
   logEmail(entry: EmailLog): Promise<void>;
 }

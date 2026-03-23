@@ -1,6 +1,19 @@
 import cds from "@sap/cds";
-import { resolveRecipient } from "../../lib/plugin.js";
+import EmailService from "../../lib/basic.js";
 import { EMAIL_DEFAULTS, type EmailAnnotationConfig } from "../../lib/types.js";
+
+// Expose protected methods for unit testing
+class TestableEmailService extends EmailService {
+  public resolveRecipient(
+    config: EmailAnnotationConfig,
+    data: Record<string, unknown>,
+    req: cds.Request,
+  ): string | null {
+    return super.resolveRecipient(config, data, req);
+  }
+}
+
+const service = Object.create(TestableEmailService.prototype) as TestableEmailService;
 
 const config = (overrides: Partial<EmailAnnotationConfig> = {}): EmailAnnotationConfig => ({
   ...EMAIL_DEFAULTS,
@@ -19,17 +32,21 @@ function fakeRequest(opts: { id?: string; attrEmail?: string } = {}): cds.Reques
 
 describe("resolveRecipient", () => {
   it("uses req.user.id when it contains a valid email", () => {
-    const result = resolveRecipient(config(), {}, fakeRequest({ id: "alice@example.com" }));
+    const result = service.resolveRecipient(config(), {}, fakeRequest({ id: "alice@example.com" }));
     expect(result).toBe("alice@example.com");
   });
 
   it("falls back to req.user.attr.email when req.user.id is not an email", () => {
-    const result = resolveRecipient(config(), {}, fakeRequest({ id: "alice123", attrEmail: "alice@example.com" }));
+    const result = service.resolveRecipient(
+      config(),
+      {},
+      fakeRequest({ id: "alice123", attrEmail: "alice@example.com" }),
+    );
     expect(result).toBe("alice@example.com");
   });
 
   it("reads from entity data field when toField is specified", () => {
-    const result = resolveRecipient(
+    const result = service.resolveRecipient(
       config({ toField: "contactEmail" }),
       { contactEmail: "bob@example.com" },
       fakeRequest({ id: "alice@example.com" }),
@@ -38,17 +55,21 @@ describe("resolveRecipient", () => {
   });
 
   it("returns null when neither req.user.id nor req.user.attr.email resolve", () => {
-    const result = resolveRecipient(config(), {}, fakeRequest({ id: "alice123" }));
+    const result = service.resolveRecipient(config(), {}, fakeRequest({ id: "alice123" }));
     expect(result).toBeNull();
   });
 
   it("returns null when toField points to missing field", () => {
-    const result = resolveRecipient(config({ toField: "contactEmail" }), {}, fakeRequest({ id: "alice@example.com" }));
+    const result = service.resolveRecipient(
+      config({ toField: "contactEmail" }),
+      {},
+      fakeRequest({ id: "alice@example.com" }),
+    );
     expect(result).toBeNull();
   });
 
   it("returns null when toField value is an empty string", () => {
-    const result = resolveRecipient(
+    const result = service.resolveRecipient(
       config({ toField: "contactEmail" }),
       { contactEmail: "" },
       fakeRequest({ id: "alice@example.com" }),
@@ -57,7 +78,7 @@ describe("resolveRecipient", () => {
   });
 
   it("returns null when toField value is not a string", () => {
-    const result = resolveRecipient(
+    const result = service.resolveRecipient(
       config({ toField: "contactEmail" }),
       { contactEmail: 42 },
       fakeRequest({ id: "alice@example.com" }),
@@ -66,7 +87,7 @@ describe("resolveRecipient", () => {
   });
 
   it("uses toField over req.user when both are available", () => {
-    const result = resolveRecipient(
+    const result = service.resolveRecipient(
       config({ toField: "contactEmail" }),
       { contactEmail: "bob@example.com" },
       fakeRequest({ id: "alice@example.com" }),

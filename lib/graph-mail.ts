@@ -2,7 +2,14 @@ import cds from "@sap/cds";
 import { EmailLog } from "#cds-models/expertum/cap/email";
 import EmailService from "./basic.js";
 import { DEFAULT_RETRY_ATTEMPTS, RETRYABLE_STATUS_CODES } from "./constants.js";
-import type { EmailPayload, GraphMailOptions, GraphPayload, GraphRecipient, IGraphMailService } from "./types.js";
+import type {
+  EmailAnnotationConfig,
+  EmailPayload,
+  GraphMailOptions,
+  GraphPayload,
+  GraphRecipient,
+  IGraphMailService,
+} from "./types.js";
 
 const LOG = cds.log("email:graph");
 
@@ -10,6 +17,21 @@ export default class GraphMailService extends EmailService implements IGraphMail
   declare readonly options: GraphMailOptions;
   private from!: string;
   private graphApi!: cds.Service;
+
+  /**
+   * Provider hook point for Graph-specific handler registration.
+   * Follows the @cap-js/attachments pattern where each provider overrides
+   * registerHandlers() to control which event hooks are registered on the
+   * ApplicationService. Currently delegates to the base class; override
+   * with Graph-specific handlers as the provider's needs diverge.
+   */
+  registerHandlers(
+    srv: cds.ApplicationService,
+    entity: cds.linked.classes.entity,
+    config: EmailAnnotationConfig,
+  ): void {
+    super.registerHandlers(srv, entity, config);
+  }
 
   async init(): Promise<void> {
     const credentials = this.options?.credentials;
