@@ -4,7 +4,9 @@
   "private": true,
   "dependencies": {
     "@sap/cds": ">=9",
-    "@expertum/cap-email-plugin": "file:../../."
+    "@expertum/cap-email-plugin": "file:../../.",
+    "@sap-cloud-sdk/resilience": "^4.5.1",
+    "@sap-cloud-sdk/http-client": "^4.5.1"
   },
   "devDependencies": {
     "@cap-js/sqlite": "^2"
@@ -32,7 +34,10 @@
         }
       },
       "microsoft-graph": {
-        "kind": "rest"
+        "kind": "rest",
+        "credentials": {
+          "destination": "<BTP_DESTINATION_NAME>"
+        }
       },
       "auth": {
         "[development]": {
