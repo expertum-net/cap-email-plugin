@@ -23,24 +23,10 @@ export default class EmailService extends cds.Service implements IEmailService {
         const rows = Array.isArray(_data) ? _data : [_data];
 
         for (const data of rows as Record<string, unknown>[]) {
-          const to = this.resolveRecipient(config, data, req);
-          if (!to) continue;
-
           try {
-            const templateContent = await loadTemplate(config.template);
-            const body = renderTemplate(templateContent, data);
-            const subject = this.resolveSubject(config, data);
-            const entityKey = this.resolveEntityKey(entity, data);
-
-            await this.sendEmail({
-              from: "",
-              to,
-              subject,
-              body,
-              entityName: entity.name,
-              entityKey,
-              saveToSentItems: config.saveToSentItems,
-            });
+            const payload = await this.prepareEmail(config, entity, data, req);
+            if (!payload) continue;
+            await this.sendEmail(payload);
           } catch (err) {
             LOG.error(`Email failed for ${entity.name}:`, err);
             if (config.rollback) throw err;
@@ -50,6 +36,31 @@ export default class EmailService extends cds.Service implements IEmailService {
 
       LOG.info(`Registered ${event} handler for ${entity.name}`);
     }
+  }
+
+  protected async prepareEmail(
+    config: EmailAnnotationConfig,
+    entity: cds.linked.classes.entity,
+    data: Record<string, unknown>,
+    req: cds.Request,
+  ): Promise<EmailPayload | null> {
+    const to = this.resolveRecipient(config, data, req);
+    if (!to) return null;
+
+    const templateContent = await loadTemplate(config.template);
+    const body = renderTemplate(templateContent, data);
+    const subject = this.resolveSubject(config, data);
+    const entityKey = this.resolveEntityKey(entity, data);
+
+    return {
+      from: "",
+      to,
+      subject,
+      body,
+      entityName: entity.name,
+      entityKey,
+      saveToSentItems: config.saveToSentItems,
+    };
   }
 
   protected resolveRecipient(
