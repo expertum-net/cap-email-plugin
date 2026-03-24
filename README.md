@@ -89,15 +89,16 @@ in your BTP subaccount.
 
 All `@email` properties have sensible defaults. Only specify what you need to override.
 
-| Property    | Type    | Default        | Description                                                          |
-| ----------- | ------- | -------------- | -------------------------------------------------------------------- |
-| `enabled`   | Boolean | `false`        | Activates email for the entity                                       |
-| `template`  | String  | `{EntityName}` | Template file name (without extension)                               |
-| `trigger`   | Array   | `['INSERT']`   | Lifecycle events: `INSERT`, `UPDATE`                                 |
-| `condition` | String  | _(none)_       | Optional CDS expression for conditional sending                      |
-| `toField`   | String  | _(none)_       | Entity field containing recipient email (overrides `req.user.email`) |
-| `subject`   | String  | _(none)_       | Subject line (supports `{{placeholder}}` syntax)                     |
-| `rollback`  | Boolean | `false`        | If `true`, roll back the originating transaction on email failure    |
+| Property         | Type    | Default        | Description                                                                   |
+| ---------------- | ------- | -------------- | ----------------------------------------------------------------------------- |
+| `enabled`        | Boolean | `false`        | Activates email for the entity                                                |
+| `template`       | String  | `{EntityName}` | Template file name (without extension)                                        |
+| `trigger`        | Array   | `['INSERT']`   | Lifecycle events: `INSERT`, `UPDATE`                                          |
+| `condition`      | String  | _(none)_       | Optional CDS expression for conditional sending                               |
+| `recipient`      | String  | _(none)_       | Static recipient email address (mutually exclusive with `recipientField`)     |
+| `recipientField` | String  | _(none)_       | Entity field containing recipient email (mutually exclusive with `recipient`) |
+| `subject`        | String  | _(none)_       | Subject line (supports `{{placeholder}}` syntax)                              |
+| `rollback`       | Boolean | `false`        | If `true`, roll back the originating transaction on email failure             |
 
 ### Full annotation example
 
@@ -107,11 +108,22 @@ All `@email` properties have sensible defaults. Only specify what you need to ov
   template: 'order-confirmation',
   trigger: ['INSERT', 'UPDATE'],
   condition: 'status = ''APPROVED''',
-  toField: 'contactEmail',
+  recipientField: 'contactEmail',
   subject: 'Order {{orderNumber}} confirmed',
   rollback: true
 }
 entity Orders { ... }
+```
+
+### Static recipient example
+
+```cds
+@email: {
+  enabled: true,
+  recipient: 'support@company.com',
+  subject: 'New support request'
+}
+entity SupportRequests { ... }
 ```
 
 ## Email Providers
@@ -130,7 +142,7 @@ Select your provider in `package.json` under `cds.requires.email.kind`.
 1. Entity INSERT/UPDATE triggers an `after` handler
 2. Plugin evaluates `@email` annotations and optional conditions
 3. Template is loaded from your project and rendered with entity data
-4. Recipient resolved from `req.user.email` or `@email.toField`
+4. Recipient resolved from `@email.recipient`, `@email.recipientField`, or `req.user.email`
 5. Email dispatched asynchronously via the configured provider
 6. Status logged; failures recorded in the plugin-owned log entity
 

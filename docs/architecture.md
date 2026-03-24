@@ -317,16 +317,17 @@ stateDiagram-v2
 
 All `@email` properties have sensible defaults. `@email.enabled: true` is the only required annotation.
 
-| Property          | Default        | Description                                                    |
-| ----------------- | -------------- | -------------------------------------------------------------- |
-| `enabled`         | `false`        | Activate email automation for this entity                      |
-| `template`        | `{EntityName}` | Template file name (resolved to `email-templates/{name}.html`) |
-| `trigger`         | `["INSERT"]`   | Lifecycle events: `INSERT`, `UPDATE`                           |
-| `condition`       | `undefined`    | Expression to evaluate before sending (not yet implemented)    |
-| `toField`         | `undefined`    | Entity field containing the recipient email                    |
-| `subject`         | `undefined`    | Subject line with `{{placeholder}}` support                    |
-| `rollback`        | `false`        | Rollback transaction on email failure                          |
-| `saveToSentItems` | `true`         | Save to sender's Sent Items (Graph provider)                   |
+| Property          | Default        | Description                                                     |
+| ----------------- | -------------- | --------------------------------------------------------------- |
+| `enabled`         | `false`        | Activate email automation for this entity                       |
+| `template`        | `{EntityName}` | Template file name (resolved to `email-templates/{name}.html`)  |
+| `trigger`         | `["INSERT"]`   | Lifecycle events: `INSERT`, `UPDATE`                            |
+| `condition`       | `undefined`    | Expression to evaluate before sending (not yet implemented)     |
+| `recipient`       | `undefined`    | Static recipient email (mutually exclusive with recipientField) |
+| `recipientField`  | `undefined`    | Entity field containing the recipient email                     |
+| `subject`         | `undefined`    | Subject line with `{{placeholder}}` support                     |
+| `rollback`        | `false`        | Rollback transaction on email failure                           |
+| `saveToSentItems` | `true`         | Save to sender's Sent Items (Graph provider)                    |
 
 ## File Reference
 
