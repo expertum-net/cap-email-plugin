@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Email Notification</title>
+  </head>
+  <body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, Helvetica, sans-serif">
+    <table
+      role="presentation"
+      width="100%"
+      cellpadding="0"
+      cellspacing="0"
+      style="background-color: #f4f4f4; padding: 24px 0"
+    >
+      <tr>
+        <td align="center">
+          <table
+            role="presentation"
+            width="600"
+            cellpadding="0"
+            cellspacing="0"
+            style="background-color: #ffffff; border-radius: 8px; overflow: hidden"
+          >
+            <!-- Header -->
+            <tr>
+              <td style="background-color: #0a6ed1; padding: 24px 32px">
+                <h1 style="margin: 0; color: #ffffff; font-size: 20px; font-weight: 600">Email Notification</h1>
+              </td>
+            </tr>
+            <!-- Body -->
+            <tr>
+              <td style="padding: 32px">
+                <p style="margin: 0 0 16px; color: #32363a; font-size: 14px; line-height: 1.5">
+                  This email was sent by the <strong>@expertum/cap-email-plugin</strong>. If you are seeing this
+                  message, the plugin is working correctly.
+                </p>
+                <p style="margin: 0 0 16px; color: #32363a; font-size: 14px; line-height: 1.5">
+                  This is the default fallback template. To customize this email, create your own template file.
+                </p>
+                <!-- Next Steps -->
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellpadding="0"
+                  cellspacing="0"
+                  style="background-color: #f2f2f2; border-radius: 4px; margin: 16px 0"
+                >
+                  <tr>
+                    <td style="padding: 16px 20px">
+                      <p style="margin: 0 0 8px; color: #32363a; font-size: 14px; font-weight: 600">Next steps:</p>
+                      <ol style="margin: 0; padding-left: 20px; color: #32363a; font-size: 13px; line-height: 1.8">
+                        <li>Create an <code>email-templates</code> folder in your project root.</li>
+                        <li>Add an HTML file named after your entity (e.g. <code>Orders.html</code>).</li>
+                        <li>Use <code>{{fieldName}}</code> placeholders to insert entity data.</li>
+                        <li>Override the template name with <code>@email.template: 'my-template'</code> if needed.</li>
+                      </ol>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <!-- Footer -->
+            <tr>
+              <td style="padding: 16px 32px; border-top: 1px solid #e5e5e5">
+                <p style="margin: 0; color: #6a6d70; font-size: 12px">Sent by @expertum/cap-email-plugin</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
