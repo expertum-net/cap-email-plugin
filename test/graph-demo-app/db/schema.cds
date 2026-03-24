@@ -18,15 +18,19 @@ entity Authors : managed {
   books  : Association to many Books on books.author = $self;
 }
 
-/**
- * Orders — sends an email on every new order via Microsoft Graph.
- * Uses the authenticated user's email as recipient (req.user).
- */
+entity Orders : cuid, managed {
+  book         : Association to Books;
+  title        : String;
+  quantity     : Integer;
+  contactEmail : String;
+}
+
+// Entity annotated in schema, recipient email address specified via req.user
 @email: {
   enabled: true,
-  subject: 'Order Confirmation: {{title}} (x{{quantity}})'
+  subject: 'req.user recipient - Order Confirmation: {{title}} (x{{quantity}})'
 }
-entity Orders : cuid, managed {
+entity OrdersAnnotatedInSchema : cuid, managed {
   book     : Association to Books;
   title    : String;
   quantity : Integer;

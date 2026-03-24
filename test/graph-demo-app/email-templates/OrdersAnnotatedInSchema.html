@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+  <head>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        color: #333;
+      }
+      .container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      h2 {
+        color: #0a6ed1;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 16px 0;
+      }
+      td {
+        padding: 8px;
+        border-bottom: 1px solid #eee;
+      }
+      td:first-child {
+        font-weight: bold;
+        width: 100px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Order Confirmation</h2>
+      <p>Your order has been placed successfully.</p>
+      <table>
+        <tr>
+          <td>Book</td>
+          <td>{{title}}</td>
+        </tr>
+        <tr>
+          <td>Quantity</td>
+          <td>{{quantity}}</td>
+        </tr>
+      </table>
+      <p>Thank you for your purchase!</p>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+  <head>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        color: #333;
+      }
+      .container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      h2 {
+        color: #d14b0a;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 16px 0;
+      }
+      td {
+        padding: 8px;
+        border-bottom: 1px solid #eee;
+      }
+      td:first-child {
+        font-weight: bold;
+        width: 100px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>New Order Alert (static recipient)</h2>
+      <p>A new order was placed. This email is always sent to the configured static address.</p>
+      <table>
+        <tr>
+          <td>Book</td>
+          <td>{{title}}</td>
+        </tr>
+        <tr>
+          <td>Quantity</td>
+          <td>{{quantity}}</td>
+        </tr>
+      </table>
+    </div>
+  </body>
+</html>
