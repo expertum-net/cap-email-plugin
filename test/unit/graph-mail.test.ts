@@ -1,5 +1,6 @@
 import GraphMailService from "../../lib/graph-mail.js";
-import type { EmailPayload } from "../../lib/types.js";
+import { DEFAULT_RETRY_ATTEMPTS } from "../../lib/constants.js";
+import type { EmailPayload, GraphPayload } from "../../lib/types.js";
 
 const proto = GraphMailService.prototype;
 
@@ -12,6 +13,33 @@ const basePayload: EmailPayload = {
   entityKey: "order-1",
   saveToSentItems: true,
 };
+
+type MockResult = { type: "resolve"; value: unknown } | { type: "reject"; value: unknown };
+
+function createMockSend() {
+  const calls: unknown[][] = [];
+  const results: MockResult[] = [];
+  let defaultResult: MockResult = { type: "resolve", value: undefined };
+
+  const fn = async (...args: unknown[]) => {
+    calls.push(args);
+    const result = results.shift() ?? defaultResult;
+    if (result.type === "reject") throw result.value;
+    return result.value;
+  };
+
+  fn.calls = calls;
+  fn.rejectOnce = (value: unknown) => {
+    results.push({ type: "reject", value });
+    return fn;
+  };
+  fn.alwaysReject = (value: unknown) => {
+    defaultResult = { type: "reject", value };
+    return fn;
+  };
+
+  return fn;
+}
 
 describe("buildGraphPayload", () => {
   it("builds correct Graph API message structure", () => {
@@ -60,5 +88,135 @@ describe("formatGraphRecipients", () => {
     const result = proto.formatGraphRecipients("Bob.Smith+tag@sub.domain.com");
 
     expect(result[0].emailAddress.address).toBe("Bob.Smith+tag@sub.domain.com");
+  });
+});
+
+describe("sendWithRetry", () => {
+  const from = "sender@example.com";
+  const graphPayload: GraphPayload = {
+    message: {
+      subject: "Test",
+      body: { contentType: "HTML", content: "<p>Test</p>" },
+      toRecipients: [{ emailAddress: { address: "recipient@example.com" } }],
+      importance: "normal",
+    },
+    saveToSentItems: true,
+  };
+
+  let mockSend: ReturnType<typeof createMockSend>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- testing private/readonly members
+  let ctx: any;
+  let recordedDelays: number[];
+  const nativeSetTimeout = globalThis.setTimeout;
+
+  beforeEach(() => {
+    mockSend = createMockSend();
+    ctx = Object.create(proto);
+    ctx.graphApi = { send: mockSend };
+    ctx.options = {};
+    recordedDelays = [];
+    globalThis.setTimeout = ((fn: () => void, ms: number) => {
+      recordedDelays.push(ms);
+      return nativeSetTimeout(fn, 0);
+    }) as typeof globalThis.setTimeout;
+  });
+
+  afterEach(() => {
+    globalThis.setTimeout = nativeSetTimeout;
+  });
+
+  it("sends successfully on first attempt without retrying", async () => {
+    await ctx.sendWithRetry(from, graphPayload);
+
+    expect(mockSend.calls).toHaveLength(1);
+    expect(recordedDelays).toHaveLength(0);
+  });
+
+  it("calls correct Graph API endpoint", async () => {
+    await ctx.sendWithRetry(from, graphPayload);
+
+    expect(mockSend.calls[0]).toEqual(["POST", `/v1.0/users/${from}/sendMail`, graphPayload]);
+  });
+
+  it.each([429, 503, 504])("retries on %i status code", async (status) => {
+    mockSend.rejectOnce({ status });
+
+    await ctx.sendWithRetry(from, graphPayload);
+
+    expect(mockSend.calls).toHaveLength(2);
+  });
+
+  it.each([400, 401, 403, 500])("does not retry on %i status code", async (status) => {
+    mockSend.alwaysReject({ status });
+
+    try {
+      await ctx.sendWithRetry(from, graphPayload);
+      expect("should have thrown").toBe(true);
+    } catch (err: unknown) {
+      expect((err as { status: number }).status).toBe(status);
+    }
+    expect(mockSend.calls).toHaveLength(1);
+  });
+
+  it("does not retry errors without status code", async () => {
+    mockSend.alwaysReject(new Error("Network error"));
+
+    await expect(ctx.sendWithRetry(from, graphPayload)).rejects.toThrow("Network error");
+    expect(mockSend.calls).toHaveLength(1);
+  });
+
+  it("applies exponential backoff delays", async () => {
+    mockSend.rejectOnce({ status: 429 }).rejectOnce({ status: 429 }).rejectOnce({ status: 429 });
+
+    await ctx.sendWithRetry(from, graphPayload);
+
+    expect(recordedDelays).toEqual([1000, 2000, 4000]);
+  });
+
+  it("throws after exhausting default max retries", async () => {
+    mockSend.alwaysReject({ status: 429 });
+
+    try {
+      await ctx.sendWithRetry(from, graphPayload);
+      expect("should have thrown").toBe(true);
+    } catch (err: unknown) {
+      expect((err as { status: number }).status).toBe(429);
+    }
+    expect(mockSend.calls).toHaveLength(DEFAULT_RETRY_ATTEMPTS + 1);
+  });
+
+  it("respects configurable retryAttempts from options", async () => {
+    ctx.options = { retryAttempts: 1 };
+    mockSend.alwaysReject({ status: 503 });
+
+    try {
+      await ctx.sendWithRetry(from, graphPayload);
+      expect("should have thrown").toBe(true);
+    } catch (err: unknown) {
+      expect((err as { status: number }).status).toBe(503);
+    }
+    expect(mockSend.calls).toHaveLength(2);
+  });
+
+  it("retryAttempts: 0 disables retrying", async () => {
+    ctx.options = { retryAttempts: 0 };
+    mockSend.alwaysReject({ status: 429 });
+
+    try {
+      await ctx.sendWithRetry(from, graphPayload);
+      expect("should have thrown").toBe(true);
+    } catch (err: unknown) {
+      expect((err as { status: number }).status).toBe(429);
+    }
+    expect(mockSend.calls).toHaveLength(1);
+  });
+
+  it("succeeds after transient failures within retry limit", async () => {
+    mockSend.rejectOnce({ status: 503 }).rejectOnce({ status: 504 });
+
+    await ctx.sendWithRetry(from, graphPayload);
+
+    expect(mockSend.calls).toHaveLength(3);
+    expect(recordedDelays).toEqual([1000, 2000]);
   });
 });
