@@ -115,7 +115,7 @@ export default class GraphMailService extends EmailService implements IGraphMail
     const maxRetries = this.options?.retryAttempts ?? DEFAULT_RETRY_ATTEMPTS;
 
     try {
-      await this.graphApi.send("POST", `/users/${from}/sendMail`, payload);
+      await this.graphApi.send("POST", `/v1.0/users/${from}/sendMail`, payload);
     } catch (err: unknown) {
       const status = (err as { status?: number }).status;
 
