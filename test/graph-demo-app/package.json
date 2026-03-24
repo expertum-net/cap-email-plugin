@@ -40,7 +40,7 @@
         }
       },
       "auth": {
-        "[development]": {
+        "[hybrid]": {
           "users": {
             "alice": {
               "roles": [
