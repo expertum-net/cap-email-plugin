@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import cds from "@sap/cds";
-import { PLACEHOLDER_PATTERN, TEMPLATE_DIR, TEMPLATE_EXT } from "./constants.js";
+import { DEFAULT_TEMPLATE_PATH, PLACEHOLDER_PATTERN, TEMPLATE_DIR, TEMPLATE_EXT } from "./constants.js";
 
 const LOG = cds.log("email-template");
 
@@ -15,9 +15,11 @@ export async function loadTemplate(templateName: string): Promise<string> {
 
   try {
     return await readFile(templatePath, "utf-8");
-  } catch (cause) {
-    LOG.warn(`Template file not found: ${templatePath}`);
-    throw new Error(`Email template not found: ${templateName}${TEMPLATE_EXT}`, { cause });
+  } catch {
+    LOG.warn(
+      `Template "${templateName}${TEMPLATE_EXT}" not found at ${templatePath} — falling back to default template`,
+    );
+    return readFile(DEFAULT_TEMPLATE_PATH, "utf-8");
   }
 }
 
