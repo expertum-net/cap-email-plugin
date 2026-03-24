@@ -56,6 +56,8 @@ export default class GraphMailService extends EmailService implements IGraphMail
       throw new Error("No credentials configured for GraphMailService");
     }
 
+    LOG.debug("Connecting to Microsoft Graph with configured credentials");
+
     const from = this.options?.email?.from;
     if (!from) {
       throw new Error("No sender address configured (cds.requires.email.email.from)");
@@ -113,7 +115,7 @@ export default class GraphMailService extends EmailService implements IGraphMail
     const maxRetries = this.options?.retryAttempts ?? DEFAULT_RETRY_ATTEMPTS;
 
     try {
-      await this.graphApi.send("POST", `/users/${from}/sendMail`, payload);
+      await this.graphApi.send("POST", `/v1.0/users/${from}/sendMail`, payload);
     } catch (err: unknown) {
       const status = (err as { status?: number }).status;
 

@@ -1,0 +1,58 @@
+{
+  "name": "cap-email-graph-demo",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "@sap/cds": ">=9",
+    "@expertum/cap-email-plugin": "file:../../.",
+    "@sap-cloud-sdk/resilience": "^4.5.1",
+    "@sap-cloud-sdk/http-client": "^4.5.1"
+  },
+  "devDependencies": {
+    "@cap-js/sqlite": "^2"
+  },
+  "scripts": {
+    "start": "cds-tsx watch"
+  },
+  "cds": {
+    "log": {
+      "levels": {
+        "email": "debug",
+        "email:graph": "debug",
+        "email-template": "debug"
+      }
+    },
+    "requires": {
+      "email": {
+        "kind": "graph",
+        "destination": "microsoft-graph",
+        "email": {
+          "from": "<YOUR_M365_SENDER_EMAIL>"
+        },
+        "credentials": {
+          "managed": true
+        }
+      },
+      "microsoft-graph": {
+        "kind": "rest",
+        "credentials": {
+          "destination": "<BTP_DESTINATION_NAME>"
+        }
+      },
+      "auth": {
+        "[hybrid]": {
+          "users": {
+            "alice": {
+              "roles": [
+                "admin"
+              ],
+              "attr": {
+                "email": "<YOUR_EMAIL>"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
