@@ -16,12 +16,6 @@ Configure the email service in `cds.requires.email`:
       "email": {
         "kind": "graph",
         "destination": "microsoft-graph",
-        "email": {
-          "from": "noreply@example.com",
-        },
-        "credentials": {
-          "managed": true,
-        },
         "retryAttempts": 3,
       },
     },
@@ -39,14 +33,27 @@ Configure the email service in `cds.requires.email`:
 
 These options apply when `kind` is `"graph"`. All are set under `cds.requires.email`.
 
-| Property        | Type     | Default | Required | Description                                                                                                                                                                                      |
-| --------------- | -------- | ------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `destination`   | `string` | —       | Yes      | Name of the BTP destination that points to Microsoft Graph. Passed to `cds.connect.to()`.                                                                                                        |
-| `email.from`    | `string` | —       | Yes      | Sender email address (must be a valid M365 mailbox). Used as the `from` in the Graph API `/sendMail` endpoint.                                                                                   |
-| `credentials`   | `object` | —       | Yes      | Credentials object. Use `{ "managed": true }` when running with BTP Destination Service.                                                                                                         |
-| `retryAttempts` | `number` | `3`     | No       | Max retry attempts for transient Graph API failures. Retries apply to HTTP status codes `429`, `503`, and `504` with exponential backoff (`2^attempt × 1000ms`). Set to `0` to disable retrying. |
+| Property        | Type     | Default | Required | Description                                                                                                                                                                                                                                        |
+| --------------- | -------- | ------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `destination`   | `string` | —       | Yes      | Name of the BTP destination that points to Microsoft Graph. Passed to `cds.connect.to()`.                                                                                                                                                          |
+| `email.from`    | `string` | —       | No       | Dev-time override for the sender address. In production, the sender is read from the BTP destination additional property `mail.from`. This local override takes precedence when set (see [Sender Address Resolution](#sender-address-resolution)). |
+| `retryAttempts` | `number` | `3`     | No       | Max retry attempts for transient Graph API failures. Retries apply to HTTP status codes `429`, `503`, and `504` with exponential backoff (`2^attempt × 1000ms`). Set to `0` to disable retrying.                                                   |
 
 Missing required options cause the service to throw at startup with a descriptive error message.
+
+### Sender Address Resolution
+
+The sender address (`from`) is resolved in the following order:
+
+1. `cds.requires.email.email.from` — local override, useful for development
+2. BTP destination additional property `mail.from` — production configuration
+3. Throw if neither is set
+
+This allows production deployments to manage the sender address alongside the destination config in BTP cockpit, while
+local development can use a simple `package.json` override without BTP connectivity.
+
+> **Note:** BTP destination resolution is tracked in [#50](https://github.com/MVansteenhuyse/cap-email/issues/50) and
+> not yet implemented. Currently only `email.from` is supported.
 
 ### BTP Destination
 
@@ -68,8 +75,11 @@ in `cds.requires`:
 }
 ```
 
-The destination name under `cds.requires` must match the `destination` value in the email config. See
-[Graph Demo App](graph-demo-app.md) for the full BTP destination setup including Azure AD app registration.
+The destination name under `cds.requires` must match the `destination` value in the email config.
+
+The BTP destination should include a `mail.from` **Additional Property** with the sender email address (valid M365
+mailbox). See [Graph Demo App](graph-demo-app.md) for the full BTP destination setup including Azure AD app
+registration.
 
 ### Basic Provider Options
 
@@ -194,11 +204,9 @@ Placeholders are replaced with the corresponding entity field values. Missing fi
       "email": {
         "kind": "graph",
         "destination": "microsoft-graph",
+        // Optional: dev-time override; production uses BTP destination mail.from
         "email": {
           "from": "noreply@example.com",
-        },
-        "credentials": {
-          "managed": true,
         },
         "retryAttempts": 5,
       },
