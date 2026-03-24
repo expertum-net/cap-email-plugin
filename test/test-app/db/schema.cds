@@ -45,6 +45,15 @@ entity Alerts : cuid, managed {
 }
 
 /**
+ * No template file — tests default template fallback.
+ */
+@email.enabled: true
+entity Notifications : cuid, managed {
+  title   : String;
+  content : String;
+}
+
+/**
  * No annotation — control entity. Should never trigger emails.
  */
 entity Products : cuid, managed {

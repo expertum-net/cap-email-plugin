@@ -52,7 +52,15 @@ describe("loadTemplate", () => {
     expect(content).toContain("{{orderNumber}}");
   });
 
-  it("throws descriptive error for missing template file", async () => {
-    await expect(loadTemplate("nonexistent")).rejects.toThrow("Email template not found: nonexistent");
+  it("falls back to default template when implementer template is missing", async () => {
+    const content = await loadTemplate("nonexistent");
+    expect(content).toContain("@expertum/cap-email-plugin");
+    expect(content).toContain("default fallback template");
+  });
+
+  it("does not fall back when implementer template exists", async () => {
+    const content = await loadTemplate("Orders");
+    expect(content).toContain("{{orderNumber}}");
+    expect(content).not.toContain("default fallback template");
   });
 });

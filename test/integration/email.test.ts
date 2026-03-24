@@ -113,6 +113,21 @@ describe("email plugin (integration)", () => {
       expect(log.subject).toBe("Orders");
     });
 
+    it("falls back to default template when entity template is missing", async () => {
+      await POST(
+        "/odata/v4/test/Notifications",
+        {
+          title: "Test",
+          content: "Hello",
+        },
+        { auth: { username: "alice", password: "" } },
+      );
+
+      const [log] = await SELECT.from(EmailLog);
+      expect(log.status).toBe("sent");
+      expect(log.recipient).toBe("alice@example.com");
+    });
+
     it("renders subject placeholders for Tickets", async () => {
       await POST(
         "/odata/v4/test/Tickets",
