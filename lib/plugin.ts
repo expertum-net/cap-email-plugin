@@ -22,13 +22,23 @@ export function parseEmailAnnotation(entity: cds.linked.classes.entity): EmailAn
     }
   }
 
-  const template = objectAnnotation?.template ?? flat.template ?? EMAIL_DEFAULTS.template;
-
-  return {
+  const merged = {
     ...EMAIL_DEFAULTS,
     ...objectAnnotation,
     ...flat,
     enabled,
+  };
+
+  if (merged.recipient && merged.recipientField) {
+    throw new Error(
+      `Entity ${entity.name} specifies both 'recipient' and 'recipientField' — they are mutually exclusive.`,
+    );
+  }
+
+  const template = objectAnnotation?.template ?? flat.template ?? EMAIL_DEFAULTS.template;
+
+  return {
+    ...merged,
     template: template === EMAIL_DEFAULTS.template ? entityName : template,
   };
 }

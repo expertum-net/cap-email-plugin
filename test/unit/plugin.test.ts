@@ -45,9 +45,9 @@ describe("resolveRecipient", () => {
     expect(result).toBe("alice@example.com");
   });
 
-  it("reads from entity data field when toField is specified", () => {
+  it("reads from entity data field when recipientField is specified", () => {
     const result = service.resolveRecipient(
-      config({ toField: "contactEmail" }),
+      config({ recipientField: "contactEmail" }),
       { contactEmail: "bob@example.com" },
       fakeRequest({ id: "alice@example.com" }),
     );
@@ -59,39 +59,57 @@ describe("resolveRecipient", () => {
     expect(result).toBeNull();
   });
 
-  it("returns null when toField points to missing field", () => {
+  it("returns null when recipientField points to missing field", () => {
     const result = service.resolveRecipient(
-      config({ toField: "contactEmail" }),
+      config({ recipientField: "contactEmail" }),
       {},
       fakeRequest({ id: "alice@example.com" }),
     );
     expect(result).toBeNull();
   });
 
-  it("returns null when toField value is an empty string", () => {
+  it("returns null when recipientField value is an empty string", () => {
     const result = service.resolveRecipient(
-      config({ toField: "contactEmail" }),
+      config({ recipientField: "contactEmail" }),
       { contactEmail: "" },
       fakeRequest({ id: "alice@example.com" }),
     );
     expect(result).toBeNull();
   });
 
-  it("returns null when toField value is not a string", () => {
+  it("returns null when recipientField value is not a string", () => {
     const result = service.resolveRecipient(
-      config({ toField: "contactEmail" }),
+      config({ recipientField: "contactEmail" }),
       { contactEmail: 42 },
       fakeRequest({ id: "alice@example.com" }),
     );
     expect(result).toBeNull();
   });
 
-  it("uses toField over req.user when both are available", () => {
+  it("uses recipientField over req.user when both are available", () => {
     const result = service.resolveRecipient(
-      config({ toField: "contactEmail" }),
+      config({ recipientField: "contactEmail" }),
       { contactEmail: "bob@example.com" },
       fakeRequest({ id: "alice@example.com" }),
     );
     expect(result).toBe("bob@example.com");
+  });
+
+  it("uses static recipient when configured", () => {
+    const result = service.resolveRecipient(
+      config({ recipient: "support@company.com" }),
+      {},
+      fakeRequest({ id: "alice@example.com" }),
+    );
+    expect(result).toBe("support@company.com");
+  });
+
+  it("uses static recipient over recipientField and req.user", () => {
+    const result = service.resolveRecipient(
+      config({ recipient: "support@company.com", recipientField: "contactEmail" }),
+      { contactEmail: "bob@example.com" },
+      fakeRequest({ id: "alice@example.com" }),
+    );
+    expect(result).toBe("support@company.com");
   });
 });

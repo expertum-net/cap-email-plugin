@@ -69,20 +69,26 @@ export default class EmailService extends cds.Service implements IEmailService {
     req: cds.Request,
   ): string | null {
     let recipient: unknown;
+    let source: string;
 
-    if (config.toField) {
-      recipient = data[config.toField];
+    if (config.recipient) {
+      recipient = config.recipient;
+      source = `recipient '${config.recipient}'`;
+    } else if (config.recipientField) {
+      recipient = data[config.recipientField];
+      source = `recipientField '${config.recipientField}'`;
     } else if (EMAIL_PATTERN.test(req.user.id)) {
       recipient = req.user.id;
+      source = "req.user";
     } else {
       recipient = req.user.attr.email;
+      source = "req.user";
     }
 
     if (typeof recipient === "string" && recipient.length > 0) {
       return recipient;
     }
 
-    const source = config.toField ? `toField '${config.toField}'` : "req.user";
     LOG.warn(`No recipient resolved from ${source} — skipping email`);
     return null;
   }
