@@ -59,7 +59,7 @@ describe("@email.rollback transaction behavior", () => {
 
       const res = await POST(
         "/odata/v4/test/Tickets",
-        { ticketNumber: "TKT-ROLLBACK", status: "OPEN", contactEmail: "bob@example.com" },
+        { ticketNumber: "TKT-ROLLBACK", status: "RESOLVED", contactEmail: "bob@example.com" },
         { auth, validateStatus: () => true },
       );
       expect(res.status).toBe(500);

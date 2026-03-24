@@ -39,7 +39,7 @@ describe("email plugin (integration)", () => {
         "/odata/v4/test/Tickets",
         {
           ticketNumber: "TKT-001",
-          status: "OPEN",
+          status: "RESOLVED",
           contactEmail: "bob@example.com",
         },
         { auth: { username: "alice", password: "" } },
@@ -118,14 +118,95 @@ describe("email plugin (integration)", () => {
         "/odata/v4/test/Tickets",
         {
           ticketNumber: "TKT-100",
-          status: "OPEN",
+          status: "RESOLVED",
           contactEmail: "bob@example.com",
         },
         { auth: { username: "alice", password: "" } },
       );
 
       const [log] = await SELECT.from(EmailLog);
-      expect(log.subject).toBe("Ticket TKT-100 — OPEN");
+      expect(log.subject).toBe("Ticket TKT-100 — RESOLVED");
+    });
+  });
+
+  describe("condition evaluation", () => {
+    it("skips email when condition is not met (Tickets: status != RESOLVED)", async () => {
+      await POST(
+        "/odata/v4/test/Tickets",
+        {
+          ticketNumber: "TKT-COND-SKIP",
+          status: "OPEN",
+          contactEmail: "bob@example.com",
+        },
+        { auth: { username: "alice", password: "" } },
+      );
+
+      const logs = await SELECT.from(EmailLog);
+      expect(logs).toHaveLength(0);
+    });
+
+    it("sends email when condition is met (Tickets: status = RESOLVED)", async () => {
+      await POST(
+        "/odata/v4/test/Tickets",
+        {
+          ticketNumber: "TKT-COND-SEND",
+          status: "RESOLVED",
+          contactEmail: "bob@example.com",
+        },
+        { auth: { username: "alice", password: "" } },
+      );
+
+      const logs = await SELECT.from(EmailLog);
+      expect(logs).toHaveLength(1);
+      expect(logs[0].recipient).toBe("bob@example.com");
+    });
+
+    it("always sends when no condition is set (Orders)", async () => {
+      await POST(
+        "/odata/v4/test/Orders",
+        {
+          orderNumber: "ORD-COND-ALWAYS",
+          status: "ANY-STATUS",
+        },
+        { auth: { username: "alice", password: "" } },
+      );
+
+      const logs = await SELECT.from(EmailLog);
+      expect(logs).toHaveLength(1);
+    });
+
+    it("evaluates condition on UPDATE trigger", async () => {
+      const { data } = await POST(
+        "/odata/v4/test/Tickets",
+        {
+          ticketNumber: "TKT-COND-UPD",
+          status: "OPEN",
+          contactEmail: "bob@example.com",
+        },
+        { auth: { username: "alice", password: "" } },
+      );
+
+      await DELETE.from(EmailLog_);
+
+      // Update but condition still not met
+      await PATCH(
+        `/odata/v4/test/Tickets(${data.ID})`,
+        { status: "IN_PROGRESS", contactEmail: "bob@example.com" },
+        { auth: { username: "alice", password: "" } },
+      );
+
+      let logs = await SELECT.from(EmailLog);
+      expect(logs).toHaveLength(0);
+
+      // Update with condition met
+      await PATCH(
+        `/odata/v4/test/Tickets(${data.ID})`,
+        { status: "RESOLVED", contactEmail: "bob@example.com" },
+        { auth: { username: "alice", password: "" } },
+      );
+
+      logs = await SELECT.from(EmailLog);
+      expect(logs).toHaveLength(1);
     });
   });
 
@@ -135,7 +216,7 @@ describe("email plugin (integration)", () => {
         "/odata/v4/test/Tickets",
         {
           ticketNumber: "TKT-200",
-          status: "OPEN",
+          status: "RESOLVED",
           contactEmail: "custom@example.com",
         },
         { auth: { username: "alice", password: "" } },

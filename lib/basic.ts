@@ -1,5 +1,6 @@
 import cds from "@sap/cds";
 import { EmailLog } from "#cds-models/expertum/cap/email";
+import { evaluateCondition } from "./condition.js";
 import { EMAIL_PATTERN, TRIGGER_TO_EVENT } from "./constants.js";
 import { loadTemplate, renderTemplate } from "./template-engine.js";
 import type { EmailAnnotationConfig, EmailPayload, IEmailService } from "./types.js";
@@ -24,6 +25,10 @@ export default class EmailService extends cds.Service implements IEmailService {
 
         for (const data of rows as Record<string, unknown>[]) {
           try {
+            if (!evaluateCondition(config.condition, data)) {
+              LOG.info(`Condition not met for ${entity.name} — skipping email`);
+              continue;
+            }
             const payload = await this.prepareEmail(config, entity, data, req);
             if (!payload) continue;
             await this.sendEmail(payload);
