@@ -27,6 +27,8 @@ service OrderService {
     subject: 'Static recipient - Order Alert: {{title}} (x{{quantity}})'
   }
   entity OrdersStatic            as projection on my.Orders;
+
+  entity TestDefaultFallback as projection on my.TestDefaultFallback;
   
   entity Books                   as projection on my.Books;
 }
