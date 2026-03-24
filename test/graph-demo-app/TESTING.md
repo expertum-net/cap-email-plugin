@@ -26,7 +26,7 @@ curl -X POST http://localhost:4004/odata/v4/order/OrdersAnnotatedInSchema \
   }'
 ```
 
-**Expected:** Email sent to `matthis.vansteenhuyse+from_config@expertum.net` (alice's `attr.email` from `.env`).
+**Expected:** Email sent to `alice@example.com` (alice's `attr.email` from `.env`).
 
 ---
 
@@ -43,19 +43,18 @@ curl -X POST http://localhost:4004/odata/v4/order/OrdersWithRecipientField \
     "title": "Jane Eyre",
     "quantity": 1,
     "book_ID": 207,
-    "contactEmail": "matthis.vansteenhuyse+dynamic@expertum.net"
+    "contactEmail": "bob+dynamic@example.com"
   }'
 ```
 
-**Expected:** Email sent to `matthis.vansteenhuyse+dynamic@expertum.net` (from the `contactEmail` field, NOT from
-`req.user`).
+**Expected:** Email sent to `bob+dynamic@example.com` (from the `contactEmail` field, NOT from `req.user`).
 
 ---
 
 ## 3. OrdersStatic — hardcoded static recipient (annotated in service)
 
-`recipient: 'matthis.vansteenhuyse@expertum.net'` — the plugin always sends to this fixed address, regardless of
-`req.user` or entity data. This is a projection on `Orders` with no extra fields.
+`recipient: 'alerts@example.com'` — the plugin always sends to this fixed address, regardless of `req.user` or entity
+data. This is a projection on `Orders` with no extra fields.
 
 ```bash
 curl -X POST http://localhost:4004/odata/v4/order/OrdersStatic \
@@ -68,8 +67,7 @@ curl -X POST http://localhost:4004/odata/v4/order/OrdersStatic \
   }'
 ```
 
-**Expected:** Email sent to `matthis.vansteenhuyse+static@expertum.net` (hardcoded in the annotation, ignores
-`req.user`).
+**Expected:** Email sent to `alerts@example.com` (hardcoded in the annotation, ignores `req.user`).
 
 ---
 

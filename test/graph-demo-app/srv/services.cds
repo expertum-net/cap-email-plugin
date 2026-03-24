@@ -23,7 +23,7 @@ service OrderService {
  */
   @email: {
     enabled: true,
-    recipient: 'matthis.vansteenhuyse+static@expertum.net',
+    recipient: 'alerts@example.com',
     subject: 'Static recipient - Order Alert: {{title}} (x{{quantity}})'
   }
   entity OrdersStatic            as projection on my.Orders;
