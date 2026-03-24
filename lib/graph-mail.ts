@@ -56,7 +56,7 @@ export default class GraphMailService extends EmailService implements IGraphMail
       throw new Error("No credentials configured for GraphMailService");
     }
 
-    LOG.info("Connecting to Microsoft Graph with provided credentials", { destination: credentials });
+    LOG.debug("Connecting to Microsoft Graph with configured credentials");
 
     const from = this.options?.email?.from;
     if (!from) {
