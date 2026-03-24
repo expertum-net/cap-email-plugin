@@ -121,7 +121,8 @@ classDiagram
         +template: string
         +trigger: string[]
         +condition: string | undefined
-        +toField: string | undefined
+        +recipient: string | undefined
+        +recipientField: string | undefined
         +subject: string | undefined
         +rollback: boolean
         +saveToSentItems: boolean
@@ -243,9 +244,11 @@ sequenceDiagram
     App-->>ES: after("CREATE") handler fires
 
     ES->>ES: resolveRecipient(config, data, req)
-    alt toField specified
-        ES->>ES: Read data[config.toField]
-    else No toField
+    alt static recipient configured
+        ES->>ES: Use config.recipient
+    else recipientField specified
+        ES->>ES: Read data[config.recipientField]
+    else No recipient/recipientField
         alt req.user.id matches email pattern
             ES->>ES: Use req.user.id
         else
@@ -369,13 +372,16 @@ flowchart TD
     F --> E
 
     E --> G[resolveRecipient]
-    G --> H{toField configured?}
-    H -->|Yes| I[Read data field: config.toField]
-    H -->|No| J{req.user.id matches<br>email pattern?}
+    G --> H{static recipient?}
+    H -->|Yes| I2[Use config.recipient]
+    H -->|No| H2{recipientField configured?}
+    H2 -->|Yes| I[Read data field: config.recipientField]
+    H2 -->|No| J{req.user.id matches<br>email pattern?}
     J -->|Yes| K[Use req.user.id]
     J -->|No| L[Use req.user.attr.email]
 
-    I --> M{Recipient is valid<br>non-empty string?}
+    I2 --> M{Recipient is valid<br>non-empty string?}
+    I --> M
     K --> M
     L --> M
 

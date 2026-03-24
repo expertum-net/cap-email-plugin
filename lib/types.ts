@@ -49,7 +49,8 @@ export interface EmailAnnotationConfig {
   template: string;
   trigger: string[];
   condition: string | undefined;
-  toField: string | undefined;
+  recipient: string | undefined;
+  recipientField: string | undefined;
   subject: string | undefined;
   rollback: boolean;
   saveToSentItems: boolean;
@@ -60,7 +61,8 @@ export const EMAIL_DEFAULTS: EmailAnnotationConfig = {
   template: "{EntityName}",
   trigger: ["INSERT"],
   condition: undefined,
-  toField: undefined,
+  recipient: undefined,
+  recipientField: undefined,
   subject: undefined,
   rollback: false,
   saveToSentItems: true,

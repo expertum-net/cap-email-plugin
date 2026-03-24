@@ -22,7 +22,7 @@ entity Orders : cuid, managed {
   template:  'ticket-update',
   trigger:   ['INSERT', 'UPDATE'],
   condition: 'status = ''RESOLVED''',
-  toField:   'contactEmail',
+  recipientField: 'contactEmail',
   subject:   'Ticket {{ticketNumber}} — {{status}}',
   rollback:  true
 }
@@ -30,6 +30,18 @@ entity Tickets : cuid, managed {
   ticketNumber : String;
   status       : String;
   contactEmail : String;
+}
+
+/**
+ * Static recipient — always sends to a fixed address.
+ */
+@email: {
+  enabled:   true,
+  recipient: 'alerts@company.com'
+}
+entity Alerts : cuid, managed {
+  message  : String;
+  severity : String;
 }
 
 /**

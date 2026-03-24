@@ -49,7 +49,8 @@ describe("parseEmailAnnotation", () => {
         template: "Orders",
         trigger: ["INSERT"],
         condition: undefined,
-        toField: undefined,
+        recipient: undefined,
+        recipientField: undefined,
         subject: undefined,
         rollback: false,
         saveToSentItems: true,
@@ -99,14 +100,14 @@ describe("parseEmailAnnotation", () => {
       expect(result).toHaveProperty("trigger", ["INSERT", "UPDATE"]);
     });
 
-    it("reads toField from flat annotation", () => {
+    it("reads recipientField from flat annotation", () => {
       const result = parseEmailAnnotation(
         fakeEntity("test.Orders", {
           "@email.enabled": true,
-          "@email.toField": "contactEmail",
+          "@email.recipientField": "contactEmail",
         }),
       );
-      expect(result).toHaveProperty("toField", "contactEmail");
+      expect(result).toHaveProperty("recipientField", "contactEmail");
     });
 
     it("reads subject from flat annotation", () => {
@@ -149,7 +150,7 @@ describe("parseEmailAnnotation", () => {
             template: "ticket-update",
             trigger: ["INSERT", "UPDATE"],
             condition: "status = 'RESOLVED'",
-            toField: "contactEmail",
+            recipientField: "contactEmail",
             subject: "Ticket {{ticketNumber}} — {{status}}",
             rollback: true,
             saveToSentItems: false,
@@ -161,7 +162,7 @@ describe("parseEmailAnnotation", () => {
         template: "ticket-update",
         trigger: ["INSERT", "UPDATE"],
         condition: "status = 'RESOLVED'",
-        toField: "contactEmail",
+        recipientField: "contactEmail",
         subject: "Ticket {{ticketNumber}} — {{status}}",
         rollback: true,
         saveToSentItems: false,
@@ -169,15 +170,84 @@ describe("parseEmailAnnotation", () => {
     });
   });
 
+  describe("recipient / recipientField XOR validation", () => {
+    it("returns config when only recipient is set (object annotation)", () => {
+      const result = parseEmailAnnotation(
+        fakeEntity("test.Orders", {
+          "@email": { enabled: true, recipient: "support@company.com" },
+        }),
+      );
+      expect(result).toHaveProperty("recipient", "support@company.com");
+      expect(result).toHaveProperty("recipientField", undefined);
+    });
+
+    it("returns config when only recipient is set (flat annotation)", () => {
+      const result = parseEmailAnnotation(
+        fakeEntity("test.Orders", {
+          "@email.enabled": true,
+          "@email.recipient": "support@company.com",
+        }),
+      );
+      expect(result).toHaveProperty("recipient", "support@company.com");
+    });
+
+    it("returns config when only recipientField is set", () => {
+      const result = parseEmailAnnotation(
+        fakeEntity("test.Orders", {
+          "@email": { enabled: true, recipientField: "contactEmail" },
+        }),
+      );
+      expect(result).toHaveProperty("recipientField", "contactEmail");
+      expect(result).toHaveProperty("recipient", undefined);
+    });
+
+    it("throws when both recipient and recipientField are set (object annotation)", () => {
+      expect(() =>
+        parseEmailAnnotation(
+          fakeEntity("test.Orders", {
+            "@email": {
+              enabled: true,
+              recipient: "support@company.com",
+              recipientField: "contactEmail",
+            },
+          }),
+        ),
+      ).toThrow("mutually exclusive");
+    });
+
+    it("throws when both recipient and recipientField are set (flat annotation)", () => {
+      expect(() =>
+        parseEmailAnnotation(
+          fakeEntity("test.Orders", {
+            "@email.enabled": true,
+            "@email.recipient": "support@company.com",
+            "@email.recipientField": "contactEmail",
+          }),
+        ),
+      ).toThrow("mutually exclusive");
+    });
+
+    it("throws when both are set across object and flat annotations", () => {
+      expect(() =>
+        parseEmailAnnotation(
+          fakeEntity("test.Orders", {
+            "@email": { enabled: true, recipient: "support@company.com" },
+            "@email.recipientField": "contactEmail",
+          }),
+        ),
+      ).toThrow("mutually exclusive");
+    });
+  });
+
   describe("merge precedence", () => {
     it("flat annotation overrides object annotation for same property", () => {
       const result = parseEmailAnnotation(
         fakeEntity("test.Orders", {
-          "@email": { enabled: true, toField: "fromObject" },
-          "@email.toField": "fromFlat",
+          "@email": { enabled: true, recipientField: "fromObject" },
+          "@email.recipientField": "fromFlat",
         }),
       );
-      expect(result).toHaveProperty("toField", "fromFlat");
+      expect(result).toHaveProperty("recipientField", "fromFlat");
     });
 
     it("flat annotation overrides defaults", () => {

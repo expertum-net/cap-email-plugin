@@ -130,7 +130,7 @@ describe("email plugin (integration)", () => {
   });
 
   describe("recipient resolution", () => {
-    it("resolves recipient from toField annotation", async () => {
+    it("resolves recipient from recipientField annotation", async () => {
       await POST(
         "/odata/v4/test/Tickets",
         {
@@ -143,6 +143,20 @@ describe("email plugin (integration)", () => {
 
       const [log] = await SELECT.from(EmailLog);
       expect(log.recipient).toBe("custom@example.com");
+    });
+
+    it("resolves static recipient from annotation", async () => {
+      await POST(
+        "/odata/v4/test/Alerts",
+        {
+          message: "Disk usage critical",
+          severity: "HIGH",
+        },
+        { auth: { username: "alice", password: "" } },
+      );
+
+      const [log] = await SELECT.from(EmailLog);
+      expect(log.recipient).toBe("alerts@company.com");
     });
 
     it("resolves recipient from req.user for Orders (default)", async () => {
