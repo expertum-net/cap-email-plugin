@@ -35,3 +35,9 @@ entity OrdersAnnotatedInSchema : cuid, managed {
   title    : String;
   quantity : Integer;
 }
+
+@email.enabled: true
+entity TestDefaultFallback : cuid, managed {
+  title    : String;
+  quantity : Integer;
+}

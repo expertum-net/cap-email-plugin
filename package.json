@@ -11,7 +11,8 @@
   "files": [
     "cds-plugin.ts",
     "lib",
-    "db"
+    "db",
+    "templates"
   ],
   "scripts": {
     "build": "tsc",
