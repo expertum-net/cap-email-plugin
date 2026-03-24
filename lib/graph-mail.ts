@@ -51,13 +51,6 @@ export default class GraphMailService extends EmailService implements IGraphMail
   }
 
   async init(): Promise<void> {
-    const credentials = this.options?.credentials;
-    if (!credentials) {
-      throw new Error("No credentials configured for GraphMailService");
-    }
-
-    LOG.debug("Connecting to Microsoft Graph with configured credentials");
-
     const from = this.options?.email?.from;
     if (!from) {
       throw new Error("No sender address configured (cds.requires.email.email.from)");

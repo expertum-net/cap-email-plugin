@@ -28,9 +28,6 @@
         "destination": "microsoft-graph",
         "email": {
           "from": "<YOUR_M365_SENDER_EMAIL>"
-        },
-        "credentials": {
-          "managed": true
         }
       },
       "microsoft-graph": {
