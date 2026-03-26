@@ -1,11 +1,22 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import cds from "@sap/cds";
-import { DEFAULT_TEMPLATE_PATH, PLACEHOLDER_PATTERN, TEMPLATE_DIR, TEMPLATE_EXT } from "./constants.js";
+import {
+  DEFAULT_TEMPLATE_PATH,
+  PLACEHOLDER_PATTERN,
+  SAFE_TEMPLATE_NAME_PATTERN,
+  TEMPLATE_DIR,
+  TEMPLATE_EXT,
+} from "./constants.js";
 
 const LOG = cds.log("email-template");
 
 export function resolveTemplatePath(templateName: string): string {
+  if (!SAFE_TEMPLATE_NAME_PATTERN.test(templateName)) {
+    throw new Error(
+      `Invalid template name: "${templateName}". Only alphanumerics, dots, hyphens, and underscores are allowed.`,
+    );
+  }
   return path.join(cds.root, TEMPLATE_DIR, `${templateName}${TEMPLATE_EXT}`);
 }
 
