@@ -48,3 +48,43 @@ jobs:
           PID=$!
           sleep 5
           kill $PID
+
+  pack-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --workspaces=false
+      - run: npm pack
+      - name: Verify tarball contents
+        run: |
+          tar tzf expertum-cap-email-plugin-*.tgz | sort > pack-contents.txt
+          echo "=== Tarball contents ==="
+          cat pack-contents.txt
+
+          # Must include compiled JS
+          grep -q "package/cds-plugin.js" pack-contents.txt
+          grep -q "package/lib/basic.js" pack-contents.txt
+          grep -q "package/lib/entities.js" pack-contents.txt
+          grep -q "package/lib/graph-mail.js" pack-contents.txt
+
+          # Must include CDS model and templates
+          grep -q "package/db/email-log.cds" pack-contents.txt
+          grep -q "package/templates/default.html" pack-contents.txt
+
+          # Must include type declarations
+          grep -q "package/cds-plugin.d.ts" pack-contents.txt
+          grep -q "package/lib/basic.d.ts" pack-contents.txt
+
+          # Must NOT include TypeScript source
+          ! grep -q "\.ts$" pack-contents.txt || { echo "FAIL: .ts source files found in tarball"; exit 1; }
+
+          # Must NOT include @cds-models
+          ! grep -q "@cds-models" pack-contents.txt || { echo "FAIL: @cds-models found in tarball"; exit 1; }
+
+          # Must NOT include test files
+          ! grep -q "package/test/" pack-contents.txt || { echo "FAIL: test files found in tarball"; exit 1; }
+
+          echo "=== All checks passed ==="
