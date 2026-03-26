@@ -97,12 +97,17 @@ export default class EmailService extends cds.Service implements IEmailService {
       source = "req.user.attr.email";
     }
 
-    if (typeof recipient === "string" && recipient.length > 0) {
-      return recipient;
+    if (typeof recipient !== "string" || recipient.length === 0) {
+      LOG.warn(`No recipient resolved from ${source} — skipping email`);
+      return null;
     }
 
-    LOG.warn(`No recipient resolved from ${source} — skipping email`);
-    return null;
+    if (!EMAIL_PATTERN.test(recipient)) {
+      LOG.warn(`Invalid email format from ${source}: '${recipient}' — skipping email`);
+      return null;
+    }
+
+    return recipient;
   }
 
   protected resolveSubject(config: EmailAnnotationConfig, data: Record<string, unknown>): string {
@@ -120,13 +125,30 @@ export default class EmailService extends cds.Service implements IEmailService {
 
   async sendEmail(payload: EmailPayload): Promise<void> {
     const { EmailLog } = emailEntities();
-    await this.logEmail({
-      entityName: payload.entityName,
-      entityKey: payload.entityKey,
-      recipient: payload.to,
-      subject: payload.subject,
-      status: EmailLog.status.sent,
-    });
+    try {
+      await this.dispatchEmail(payload);
+      await this.logEmail({
+        entityName: payload.entityName,
+        entityKey: payload.entityKey,
+        recipient: payload.to,
+        subject: payload.subject,
+        status: EmailLog.status.sent,
+      });
+    } catch (err) {
+      await this.logEmail({
+        entityName: payload.entityName,
+        entityKey: payload.entityKey,
+        recipient: payload.to,
+        subject: payload.subject,
+        status: EmailLog.status.failed,
+        error: err instanceof Error ? err.message : String(err),
+      });
+      throw err;
+    }
+  }
+
+  async dispatchEmail(_payload: EmailPayload): Promise<void> {
+    // No-op — subclasses override for provider-specific dispatch
   }
 
   async logEmail(entry: EmailLog): Promise<void> {

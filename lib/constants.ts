@@ -7,6 +7,7 @@ export const PLACEHOLDER_PATTERN = /\{\{(\w+)\}\}/g;
 export const SAFE_TEMPLATE_NAME_PATTERN = /^[\w.-]+$/;
 export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const DEFAULT_RETRY_ATTEMPTS = 3;
+export const DEFAULT_MAX_RETRY_DELAY = 60_000;
 export const DEFAULT_TEMPLATE_PATH = fileURLToPath(new URL("../templates/default.html", import.meta.url));
 export const RETRYABLE_STATUS_CODES = [429, 503, 504];
 
