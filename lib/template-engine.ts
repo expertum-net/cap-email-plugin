@@ -19,7 +19,7 @@ export async function loadTemplate(templateName: string): Promise<string> {
     LOG.warn(
       `Template "${templateName}${TEMPLATE_EXT}" not found at ${templatePath} — falling back to default template`,
     );
-    return readFile(DEFAULT_TEMPLATE_PATH, "utf-8");
+    return await readFile(DEFAULT_TEMPLATE_PATH, "utf-8");
   }
 }
 
