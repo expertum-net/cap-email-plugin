@@ -11,7 +11,11 @@ export interface EmailPayload {
   saveToSentItems: boolean;
 }
 
-export interface IEmailService extends cds.Service {
+export interface IEmailProvider extends cds.Service {
+  dispatchEmail(payload: EmailPayload): Promise<void>;
+}
+
+export interface IEmailService extends IEmailProvider {
   registerHandlers(srv: cds.ApplicationService, entity: cds.linked.classes.entity, config: EmailAnnotationConfig): void;
   sendEmail(payload: EmailPayload): Promise<void>;
   logEmail(entry: EmailLog): Promise<void>;
@@ -39,7 +43,7 @@ export interface GraphMailOptions {
   maxRetryDelay?: number;
 }
 
-export interface IGraphMailService extends IEmailService {
+export interface IGraphMailService extends IEmailProvider {
   buildGraphPayload(payload: EmailPayload): GraphPayload;
   formatGraphRecipients(email: string): GraphRecipient[];
   sendWithRetry(from: string, payload: GraphPayload, attempt?: number): Promise<void>;
