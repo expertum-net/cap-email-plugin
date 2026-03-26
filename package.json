@@ -33,7 +33,17 @@
     "node": ">=22"
   },
   "peerDependencies": {
-    "@sap/cds": ">=9"
+    "@sap/cds": ">=9",
+    "@sap-cloud-sdk/http-client": "^4",
+    "@sap-cloud-sdk/resilience": "^4"
+  },
+  "peerDependenciesMeta": {
+    "@sap-cloud-sdk/http-client": {
+      "optional": true
+    },
+    "@sap-cloud-sdk/resilience": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@cap-js/cds-test": "^0.4.1",
