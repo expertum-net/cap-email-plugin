@@ -11,6 +11,7 @@
   "main": "cds-plugin.js",
   "files": [
     "cds-plugin.js",
+    "index.cds",
     "lib/**/*.js",
     "lib/**/*.js.map",
     "db",
