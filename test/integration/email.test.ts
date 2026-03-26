@@ -268,5 +268,43 @@ describe("email plugin (integration)", () => {
       const [log] = await SELECT.from(EmailLog);
       expect(log.recipient).toBe("alice@example.com");
     });
+
+    it("skips email gracefully when user has no resolvable email", async () => {
+      await POST(
+        "/odata/v4/test/Orders",
+        {
+          orderNumber: "ORD-NO-EMAIL",
+          status: "NEW",
+        },
+        { auth: { username: "bob", password: "" } },
+      );
+
+      const logs = await SELECT.from(EmailLog);
+      expect(logs).toHaveLength(0);
+    });
+  });
+
+  describe("bulk insert", () => {
+    it("handles multiple sequential INSERTs with per-row email logging", async () => {
+      await POST(
+        "/odata/v4/test/Orders",
+        { orderNumber: "BULK-001", status: "NEW" },
+        { auth: { username: "alice", password: "" } },
+      );
+      await POST(
+        "/odata/v4/test/Orders",
+        { orderNumber: "BULK-002", status: "NEW" },
+        { auth: { username: "alice", password: "" } },
+      );
+      await POST(
+        "/odata/v4/test/Orders",
+        { orderNumber: "BULK-003", status: "NEW" },
+        { auth: { username: "alice", password: "" } },
+      );
+
+      const logs = await SELECT.from(EmailLog);
+      expect(logs).toHaveLength(3);
+      expect(logs.every((l) => l.status === "sent")).toBe(true);
+    });
   });
 });
