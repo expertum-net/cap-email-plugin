@@ -1,5 +1,5 @@
 import cds from "@sap/cds";
-import { EmailLog } from "#cds-models/expertum/cap/email";
+import { emailEntities, type EmailLog } from "./entities.js";
 import { evaluateCondition } from "./condition.js";
 import { EMAIL_PATTERN, TRIGGER_TO_EVENT } from "./constants.js";
 import { loadTemplate, renderTemplate } from "./template-engine.js";
@@ -112,6 +112,7 @@ export default class EmailService extends cds.Service implements IEmailService {
   }
 
   async sendEmail(payload: EmailPayload): Promise<void> {
+    const { EmailLog } = emailEntities();
     await this.logEmail({
       entityName: payload.entityName,
       entityKey: payload.entityKey,
@@ -122,6 +123,7 @@ export default class EmailService extends cds.Service implements IEmailService {
   }
 
   async logEmail(entry: EmailLog): Promise<void> {
+    const { EmailLog } = emailEntities();
     try {
       await INSERT.into(EmailLog).entries(entry);
     } catch (err) {
