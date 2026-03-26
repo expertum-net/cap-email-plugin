@@ -58,6 +58,14 @@ describe("loadTemplate", () => {
     expect(content).toContain("default fallback template");
   });
 
+  it("fallback template renders valid HTML end-to-end", async () => {
+    const template = await loadTemplate("nonexistent");
+    const rendered = renderTemplate(template, {});
+    expect(rendered).toContain("<!doctype html>");
+    expect(rendered).toContain("@expertum/cap-email-plugin");
+    expect(rendered).not.toContain("{{");
+  });
+
   it("does not fall back when implementer template exists", async () => {
     const content = await loadTemplate("Orders");
     expect(content).toContain("{{orderNumber}}");
