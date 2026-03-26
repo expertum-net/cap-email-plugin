@@ -1,54 +1,14 @@
 import cds from "@sap/cds";
 import { emailEntities } from "./entities.js";
 import EmailService from "./basic.js";
-import { DEFAULT_RETRY_ATTEMPTS, RETRYABLE_STATUS_CODES, TRIGGER_TO_EVENT } from "./constants.js";
-import type {
-  EmailAnnotationConfig,
-  EmailPayload,
-  GraphMailOptions,
-  GraphPayload,
-  GraphRecipient,
-  IGraphMailService,
-} from "./types.js";
+import { DEFAULT_RETRY_ATTEMPTS, RETRYABLE_STATUS_CODES } from "./constants.js";
+import type { EmailPayload, GraphMailOptions, GraphPayload, GraphRecipient, IGraphMailService } from "./types.js";
 
 const LOG = cds.log("email:graph");
 
 export default class GraphMailService extends EmailService implements IGraphMailService {
   declare readonly options: GraphMailOptions;
-  private from!: string;
   private graphApi!: cds.Service;
-
-  registerHandlers(
-    srv: cds.ApplicationService,
-    entity: cds.linked.classes.entity,
-    config: EmailAnnotationConfig,
-  ): void {
-    for (const trigger of config.trigger) {
-      const event = TRIGGER_TO_EVENT[trigger];
-      if (!event) {
-        LOG.warn(`Unknown trigger '${trigger}' on ${entity.name} — skipping`);
-        continue;
-      }
-
-      srv.after(event, entity.name, async (_data: unknown, req: cds.Request) => {
-        const rows = Array.isArray(_data) ? _data : [_data];
-
-        for (const data of rows as Record<string, unknown>[]) {
-          try {
-            const payload = await this.prepareEmail(config, entity, data, req);
-            if (!payload) continue;
-            payload.from = this.from;
-            await this.sendEmail(payload);
-          } catch (err) {
-            LOG.error(`Email failed for ${entity.name}:`, err);
-            if (config.rollback) throw err;
-          }
-        }
-      });
-
-      LOG.info(`Registered ${event} handler for ${entity.name} (graph)`);
-    }
-  }
 
   async init(): Promise<void> {
     const from = this.options?.email?.from;
