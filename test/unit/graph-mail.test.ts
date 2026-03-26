@@ -4,6 +4,32 @@ import type { EmailPayload, GraphPayload } from "../../lib/types.js";
 
 const proto = GraphMailService.prototype;
 
+describe("init", () => {
+  it("throws when email.from is missing", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- testing init validation
+    const ctx: any = Object.create(proto);
+    ctx.options = {};
+
+    await expect(ctx.init()).rejects.toThrow("No sender address configured");
+  });
+
+  it("throws when email.from is missing but other options exist", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- testing init validation
+    const ctx: any = Object.create(proto);
+    ctx.options = { destination: "graph-api" };
+
+    await expect(ctx.init()).rejects.toThrow("No sender address configured");
+  });
+
+  it("throws when destination is missing", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- testing init validation
+    const ctx: any = Object.create(proto);
+    ctx.options = { email: { from: "sender@example.com" } };
+
+    await expect(ctx.init()).rejects.toThrow("No destination configured");
+  });
+});
+
 const basePayload: EmailPayload = {
   from: "sender@example.com",
   to: "recipient@example.com",

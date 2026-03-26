@@ -11,6 +11,14 @@ class TestableEmailService extends EmailService {
   ): string | null {
     return super.resolveRecipient(config, data, req);
   }
+
+  public resolveSubject(config: EmailAnnotationConfig, data: Record<string, unknown>): string {
+    return super.resolveSubject(config, data);
+  }
+
+  public resolveEntityKey(entity: cds.linked.classes.entity, data: Record<string, unknown>): string {
+    return super.resolveEntityKey(entity, data);
+  }
 }
 
 const service = Object.create(TestableEmailService.prototype) as TestableEmailService;
@@ -111,5 +119,63 @@ describe("resolveRecipient", () => {
       fakeRequest({ id: "alice@example.com" }),
     );
     expect(result).toBe("support@company.com");
+  });
+});
+
+function fakeEntity(keyNames: string[]): cds.linked.classes.entity {
+  return {
+    name: "TestEntity",
+    keys: Object.fromEntries(keyNames.map((k) => [k, {}])),
+  } as unknown as cds.linked.classes.entity;
+}
+
+describe("resolveSubject", () => {
+  it("renders placeholders when config.subject is set", () => {
+    const result = service.resolveSubject(config({ subject: "Order {{orderNumber}} confirmed" }), {
+      orderNumber: "ORD-001",
+    });
+    expect(result).toBe("Order ORD-001 confirmed");
+  });
+
+  it("returns subject as-is when no placeholders exist", () => {
+    const result = service.resolveSubject(config({ subject: "New order received" }), {});
+    expect(result).toBe("New order received");
+  });
+
+  it("derives subject from template name when no subject configured", () => {
+    const result = service.resolveSubject(config({ subject: undefined, template: "Orders" }), {});
+    expect(result).toBe("Orders");
+  });
+
+  it("uses last segment of template path with slashes", () => {
+    const result = service.resolveSubject(config({ subject: undefined, template: "notifications/alert" }), {});
+    expect(result).toBe("alert");
+  });
+});
+
+describe("resolveEntityKey", () => {
+  it("returns single key value", () => {
+    const result = service.resolveEntityKey(fakeEntity(["ID"]), { ID: "abc-123" });
+    expect(result).toBe("abc-123");
+  });
+
+  it("returns comma-separated composite keys", () => {
+    const result = service.resolveEntityKey(fakeEntity(["tenant", "ID"]), { tenant: "t1", ID: "abc" });
+    expect(result).toBe("t1,abc");
+  });
+
+  it("returns empty string for missing key values", () => {
+    const result = service.resolveEntityKey(fakeEntity(["ID"]), {});
+    expect(result).toBe("");
+  });
+
+  it("returns empty string when entity has no keys", () => {
+    const result = service.resolveEntityKey(fakeEntity([]), { ID: "abc" });
+    expect(result).toBe("");
+  });
+
+  it("coerces non-string key values to string", () => {
+    const result = service.resolveEntityKey(fakeEntity(["seq"]), { seq: 42 });
+    expect(result).toBe("42");
   });
 });
