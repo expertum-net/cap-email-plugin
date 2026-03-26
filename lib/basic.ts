@@ -89,11 +89,11 @@ export default class EmailService extends cds.Service implements IEmailService {
     } else if (config.recipientField) {
       recipient = data[config.recipientField];
       source = `recipientField '${config.recipientField}'`;
-    } else if (EMAIL_PATTERN.test(req.user.id)) {
+    } else if (req.user?.id && EMAIL_PATTERN.test(req.user.id)) {
       recipient = req.user.id;
       source = "req.user.id";
     } else {
-      recipient = req.user.attr.email;
+      recipient = req.user?.attr?.email;
       source = "req.user.attr.email";
     }
 

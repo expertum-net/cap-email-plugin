@@ -239,6 +239,18 @@ describe("parseEmailAnnotation", () => {
     });
   });
 
+  describe("condition validation", () => {
+    it("throws when @email.condition has invalid syntax", () => {
+      expect(() =>
+        parseEmailAnnotation(
+          fakeEntity("test.Orders", {
+            "@email": { enabled: true, condition: "not valid %%% syntax" },
+          }),
+        ),
+      ).toThrow(/Invalid @email\.condition/);
+    });
+  });
+
   describe("merge precedence", () => {
     it("flat annotation overrides object annotation for same property", () => {
       const result = parseEmailAnnotation(

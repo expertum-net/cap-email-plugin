@@ -62,6 +62,24 @@ describe("evaluateCondition()", () => {
     });
   });
 
+  describe("numeric type guards", () => {
+    it("returns false when > operands are non-numeric strings", () => {
+      expect(evaluateCondition("name > 'abc'", { name: "def" })).toBe(false);
+    });
+
+    it("returns false when < left operand is undefined", () => {
+      expect(evaluateCondition("amount < 100", {})).toBe(false);
+    });
+
+    it("returns false when >= operand is NaN", () => {
+      expect(evaluateCondition("amount >= 100", { amount: NaN })).toBe(false);
+    });
+
+    it("returns false when <= operands are strings", () => {
+      expect(evaluateCondition("amount <= 100", { amount: "fifty" })).toBe(false);
+    });
+  });
+
   describe("null checks", () => {
     it("evaluates 'is null' for null value", () => {
       expect(evaluateCondition("email is null", { email: null })).toBe(true);

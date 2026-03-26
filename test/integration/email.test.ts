@@ -128,6 +128,23 @@ describe("email plugin (integration)", () => {
       expect(log.recipient).toBe("alice@example.com");
     });
 
+    it("escapes HTML entities in subject placeholders", async () => {
+      await POST(
+        "/odata/v4/test/Tickets",
+        {
+          ticketNumber: '<script>alert("xss")</script>',
+          status: "RESOLVED",
+          contactEmail: "bob@example.com",
+        },
+        { auth: { username: "alice", password: "" } },
+      );
+
+      const [log] = await SELECT.from(EmailLog);
+      expect(log.status).toBe("sent");
+      expect(log.subject).toContain("&lt;script&gt;");
+      expect(log.subject).not.toContain("<script>");
+    });
+
     it("renders subject placeholders for Tickets", async () => {
       await POST(
         "/odata/v4/test/Tickets",

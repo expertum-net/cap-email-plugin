@@ -78,13 +78,32 @@ describe("EmailService.logEmail", () => {
     expect(log.createdAt).toBeDefined();
   });
 
-  it("does not throw when log insert fails", async () => {
-    // Pass an object that will cause a DB error (status exceeds enum values)
-    // logEmail should catch internally and not propagate
-    await expect(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- intentionally invalid data
-      emailService.logEmail({ invalid: "data" } as unknown as EmailLog),
-    ).resolves.toBeUndefined();
+  it("does not throw when log insert fails and logs the error", async () => {
+    const entry = {
+      entityName: "Orders",
+      entityKey: "dup-test",
+      recipient: "test@example.com",
+      subject: "Test",
+      status: EmailLog.status.sent,
+    };
+    await emailService.logEmail(entry);
+    const [log] = await SELECT.from(EmailLog);
+
+    const LOG = cds.log("email");
+    const originalError = LOG.error;
+    const errorCalls: unknown[][] = [];
+    LOG.error = ((...args: unknown[]) => {
+      errorCalls.push(args);
+    }) as typeof LOG.error;
+
+    try {
+      // Re-insert with same ID triggers UNIQUE constraint violation
+      await expect(emailService.logEmail({ ...entry, ID: log.ID } as EmailLog)).resolves.toBeUndefined();
+      expect(errorCalls.length).toBeGreaterThanOrEqual(1);
+      expect(String(errorCalls[0][0])).toContain("Failed to write email log");
+    } finally {
+      LOG.error = originalError;
+    }
   });
 });
 

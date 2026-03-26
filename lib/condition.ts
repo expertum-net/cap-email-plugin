@@ -111,6 +111,10 @@ function evaluateComparison(tokens: Token[], data: Record<string, unknown>): boo
   return false;
 }
 
+function isNumeric(value: unknown): value is number {
+  return typeof value === "number" && !Number.isNaN(value);
+}
+
 function compareValues(left: unknown, op: string, right: unknown): boolean {
   switch (op) {
     case "=":
@@ -120,13 +124,17 @@ function compareValues(left: unknown, op: string, right: unknown): boolean {
     case "<>":
       return left !== right;
     case ">":
-      return (left as number) > (right as number);
     case "<":
-      return (left as number) < (right as number);
     case ">=":
-      return (left as number) >= (right as number);
     case "<=":
-      return (left as number) <= (right as number);
+      if (!isNumeric(left) || !isNumeric(right)) {
+        LOG.warn(`Operator '${op}' requires numeric operands (got ${typeof left}, ${typeof right}) — skipping email`);
+        return false;
+      }
+      if (op === ">") return left > right;
+      if (op === "<") return left < right;
+      if (op === ">=") return left >= right;
+      return left <= right;
     default:
       LOG.warn(`Unsupported operator '${op}' in condition — skipping email`);
       return false;

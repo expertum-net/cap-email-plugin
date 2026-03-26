@@ -120,6 +120,99 @@ describe("resolveRecipient", () => {
     );
     expect(result).toBe("support@company.com");
   });
+
+  it("returns null when recipientField value is explicitly null", () => {
+    const result = service.resolveRecipient(
+      config({ recipientField: "contactEmail" }),
+      { contactEmail: null },
+      fakeRequest({ id: "alice@example.com" }),
+    );
+    expect(result).toBeNull();
+  });
+
+  it("returns null when recipientField value is explicitly undefined", () => {
+    const result = service.resolveRecipient(
+      config({ recipientField: "contactEmail" }),
+      { contactEmail: undefined },
+      fakeRequest({ id: "alice@example.com" }),
+    );
+    expect(result).toBeNull();
+  });
+
+  it("falls through to req.user when static recipient is an empty string", () => {
+    const result = service.resolveRecipient(config({ recipient: "" }), {}, fakeRequest({ id: "alice@example.com" }));
+    expect(result).toBe("alice@example.com");
+  });
+
+  it("returns null when req.user is undefined", () => {
+    const result = service.resolveRecipient(config(), {}, { user: undefined } as unknown as cds.Request);
+    expect(result).toBeNull();
+  });
+
+  it("returns null when req.user.attr is undefined", () => {
+    const result = service.resolveRecipient(config(), {}, {
+      user: { id: "not-an-email", attr: undefined },
+    } as unknown as cds.Request);
+    expect(result).toBeNull();
+  });
+});
+
+function fakeEntity(keyNames: string[]): cds.linked.classes.entity {
+  return {
+    name: "TestEntity",
+    keys: Object.fromEntries(keyNames.map((k) => [k, {}])),
+  } as unknown as cds.linked.classes.entity;
+}
+
+describe("resolveSubject", () => {
+  it("renders placeholders when config.subject is set", () => {
+    const result = service.resolveSubject(config({ subject: "Order {{orderNumber}} confirmed" }), {
+      orderNumber: "ORD-001",
+    });
+    expect(result).toBe("Order ORD-001 confirmed");
+  });
+
+  it("returns subject as-is when no placeholders exist", () => {
+    const result = service.resolveSubject(config({ subject: "New order received" }), {});
+    expect(result).toBe("New order received");
+  });
+
+  it("derives subject from template name when no subject configured", () => {
+    const result = service.resolveSubject(config({ subject: undefined, template: "Orders" }), {});
+    expect(result).toBe("Orders");
+  });
+
+  it("uses last segment of template path with slashes", () => {
+    const result = service.resolveSubject(config({ subject: undefined, template: "notifications/alert" }), {});
+    expect(result).toBe("alert");
+  });
+});
+
+describe("resolveEntityKey", () => {
+  it("returns single key value", () => {
+    const result = service.resolveEntityKey(fakeEntity(["ID"]), { ID: "abc-123" });
+    expect(result).toBe("abc-123");
+  });
+
+  it("returns comma-separated composite keys", () => {
+    const result = service.resolveEntityKey(fakeEntity(["tenant", "ID"]), { tenant: "t1", ID: "abc" });
+    expect(result).toBe("t1,abc");
+  });
+
+  it("returns empty string for missing key values", () => {
+    const result = service.resolveEntityKey(fakeEntity(["ID"]), {});
+    expect(result).toBe("");
+  });
+
+  it("returns empty string when entity has no keys", () => {
+    const result = service.resolveEntityKey(fakeEntity([]), { ID: "abc" });
+    expect(result).toBe("");
+  });
+
+  it("coerces non-string key values to string", () => {
+    const result = service.resolveEntityKey(fakeEntity(["seq"]), { seq: 42 });
+    expect(result).toBe("42");
+  });
 });
 
 function fakeEntity(keyNames: string[]): cds.linked.classes.entity {

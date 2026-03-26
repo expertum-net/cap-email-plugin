@@ -20,4 +20,10 @@ npx prettier --check . || {
   exit 1
 }
 
+echo "=> Tests"
+npm test || {
+  echo "Tests failed. Fix errors before committing."
+  exit 1
+}
+
 echo "All pre-commit checks passed."

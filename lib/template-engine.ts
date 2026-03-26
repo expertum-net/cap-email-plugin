@@ -20,17 +20,26 @@ export function resolveTemplatePath(templateName: string): string {
   return path.join(cds.root, TEMPLATE_DIR, `${templateName}${TEMPLATE_EXT}`);
 }
 
+async function readTemplateFile(filePath: string, label: string): Promise<string> {
+  try {
+    return await readFile(filePath, "utf-8");
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code;
+    throw new Error(`Failed to read ${label} template at ${filePath} (${code ?? "unknown error"})`, { cause: err });
+  }
+}
+
 export async function loadTemplate(templateName: string): Promise<string> {
   const templatePath = resolveTemplatePath(templateName);
   LOG.debug("Loading template from:", templatePath);
 
   try {
-    return await readFile(templatePath, "utf-8");
+    return await readTemplateFile(templatePath, `"${templateName}"`);
   } catch {
     LOG.warn(
       `Template "${templateName}${TEMPLATE_EXT}" not found at ${templatePath} — falling back to default template`,
     );
-    return await readFile(DEFAULT_TEMPLATE_PATH, "utf-8");
+    return await readTemplateFile(DEFAULT_TEMPLATE_PATH, "default");
   }
 }
 

@@ -116,4 +116,22 @@ describe("loadTemplate", () => {
     expect(content).toContain("{{orderNumber}}");
     expect(content).not.toContain("default fallback template");
   });
+
+  it("logs warning with template path when falling back to default", async () => {
+    const LOG = cds.log("email-template");
+    const originalWarn = LOG.warn;
+    const warnCalls: unknown[][] = [];
+    LOG.warn = ((...args: unknown[]) => {
+      warnCalls.push(args);
+    }) as typeof LOG.warn;
+
+    try {
+      await loadTemplate("nonexistent");
+      expect(warnCalls).toHaveLength(1);
+      expect(warnCalls[0][0]).toContain("nonexistent.html");
+      expect(warnCalls[0][0]).toContain("falling back to default");
+    } finally {
+      LOG.warn = originalWarn;
+    }
+  });
 });
