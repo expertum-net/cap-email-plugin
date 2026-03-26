@@ -33,6 +33,30 @@ describe("renderTemplate", () => {
     const result = renderTemplate(template, { a: null, b: undefined });
     expect(result).toBe("<p> — </p>");
   });
+
+  it("escapes HTML entities in placeholder values", () => {
+    const template = "<p>{{description}}</p>";
+    const result = renderTemplate(template, { description: '<img src=x onerror="alert(1)">' });
+    expect(result).toBe("<p>&lt;img src=x onerror=&quot;alert(1)&quot;&gt;</p>");
+  });
+
+  it("escapes all five HTML special characters", () => {
+    const template = "<p>{{val}}</p>";
+    const result = renderTemplate(template, { val: `& < > " '` });
+    expect(result).toBe("<p>&amp; &lt; &gt; &quot; &#39;</p>");
+  });
+
+  it("renders object values as empty string", () => {
+    const template = "<p>{{nested}}</p>";
+    const result = renderTemplate(template, { nested: { a: 1 } });
+    expect(result).toBe("<p></p>");
+  });
+
+  it("renders array values as empty string", () => {
+    const template = "<p>{{items}}</p>";
+    const result = renderTemplate(template, { items: [1, 2, 3] });
+    expect(result).toBe("<p></p>");
+  });
 });
 
 describe("resolveTemplatePath", () => {

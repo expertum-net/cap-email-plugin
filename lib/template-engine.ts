@@ -34,10 +34,28 @@ export async function loadTemplate(templateName: string): Promise<string> {
   }
 }
 
+const HTML_ESCAPE_MAP: Record<string, string> = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&#39;",
+};
+
+function escapeHtml(str: string): string {
+  return str.replace(/[&<>"']/g, (ch) => HTML_ESCAPE_MAP[ch]);
+}
+
+function formatValue(value: unknown): string {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "object") {
+    LOG.warn("Placeholder received a non-primitive value — rendering as empty string:", value);
+    return "";
+  }
+  return escapeHtml(String(value));
+}
+
 export function renderTemplate(template: string, data: Record<string, unknown>): string {
   LOG.debug("Rendering template with data:", data);
-  return template.replace(PLACEHOLDER_PATTERN, (_, key) => {
-    const value = data[key];
-    return value !== null && value !== undefined ? String(value) : "";
-  });
+  return template.replace(PLACEHOLDER_PATTERN, (_, key) => formatValue(data[key]));
 }
