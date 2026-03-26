@@ -90,9 +90,13 @@ function evaluateComparison(tokens: Token[], data: Record<string, unknown>): boo
 
   // 'between': [ref, 'between', val, 'and', val]
   if (tokens.length === 5 && tokens[1] === "between" && tokens[3] === "and") {
-    const left = resolve(tokens[0], data) as number;
-    const low = resolve(tokens[2], data) as number;
-    const high = resolve(tokens[4], data) as number;
+    const left = resolve(tokens[0], data);
+    const low = resolve(tokens[2], data);
+    const high = resolve(tokens[4], data);
+    if (typeof left !== "number" || typeof low !== "number" || typeof high !== "number") {
+      LOG.warn("BETWEEN requires numeric operands — skipping email");
+      return false;
+    }
     return left >= low && left <= high;
   }
 
@@ -141,6 +145,22 @@ function evaluateXpr(xpr: Token[], data: Record<string, unknown>): boolean {
     const andGroups = splitByLogicalOp(group, "and");
     return andGroups.every((comp) => evaluateComparison(comp, data));
   });
+}
+
+/**
+ * Validates a CDS condition expression at startup.
+ * Throws if the condition cannot be parsed — fail early and loud.
+ */
+export function validateCondition(condition: string | undefined, entityName: string): void {
+  if (!condition) return;
+
+  try {
+    cds.parse.expr(condition);
+  } catch (err) {
+    throw new Error(
+      `Invalid @email.condition on ${entityName}: '${condition}' — ${err instanceof Error ? err.message : err}`,
+    );
+  }
 }
 
 /**

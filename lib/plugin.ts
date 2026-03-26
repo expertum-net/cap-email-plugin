@@ -1,5 +1,6 @@
 import cds from "@sap/cds";
 import { ANNOTATION_PREFIX } from "./constants.js";
+import { validateCondition } from "./condition.js";
 import { type EmailAnnotationConfig, type IEmailService, EMAIL_DEFAULTS } from "./types.js";
 
 const LOG = cds.log("email");
@@ -36,6 +37,8 @@ export function parseEmailAnnotation(entity: cds.linked.classes.entity): EmailAn
       `Entity ${entity.name} specifies both 'recipient' and 'recipientField' — they are mutually exclusive.`,
     );
   }
+
+  validateCondition(merged.condition, entity.name);
 
   const template = objectAnnotation?.template ?? flat.template ?? EMAIL_DEFAULTS.template;
 
