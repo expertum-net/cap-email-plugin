@@ -40,6 +40,27 @@ describe("resolveTemplatePath", () => {
     const result = resolveTemplatePath("Orders");
     expect(result).toBe(path.join(cds.root, TEMPLATE_DIR, `Orders${TEMPLATE_EXT}`));
   });
+
+  it("accepts valid names with dots, hyphens, and underscores", () => {
+    expect(() => resolveTemplatePath("Order.v2")).not.toThrow();
+    expect(() => resolveTemplatePath("ticket-update")).not.toThrow();
+    expect(() => resolveTemplatePath("my_template")).not.toThrow();
+  });
+
+  it("rejects path traversal attempts", () => {
+    expect(() => resolveTemplatePath("../../etc/passwd")).toThrow("Invalid template name");
+    expect(() => resolveTemplatePath("../secret")).toThrow("Invalid template name");
+  });
+
+  it("rejects names with slashes", () => {
+    expect(() => resolveTemplatePath("sub/dir")).toThrow("Invalid template name");
+    expect(() => resolveTemplatePath("sub\\dir")).toThrow("Invalid template name");
+  });
+
+  it("rejects names with spaces or special characters", () => {
+    expect(() => resolveTemplatePath("my template")).toThrow("Invalid template name");
+    expect(() => resolveTemplatePath("template<script>")).toThrow("Invalid template name");
+  });
 });
 
 describe("loadTemplate", () => {
