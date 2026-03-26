@@ -2,6 +2,8 @@ import cds from "@sap/cds";
 import { ANNOTATION_PREFIX } from "./constants.js";
 import { type EmailAnnotationConfig, type IEmailService, EMAIL_DEFAULTS } from "./types.js";
 
+const LOG = cds.log("email");
+
 export function parseEmailAnnotation(entity: cds.linked.classes.entity): EmailAnnotationConfig | null {
   const entityAny = entity as unknown as Record<string, unknown>;
   const objectAnnotation = entityAny[ANNOTATION_PREFIX] as Partial<EmailAnnotationConfig> | undefined;
@@ -50,10 +52,15 @@ export async function registerEmailHandlers() {
     if (!(srv instanceof cds.ApplicationService)) continue;
 
     for (const entity of Object.values(srv.entities)) {
-      const config = parseEmailAnnotation(entity);
-      if (!config) continue;
+      try {
+        const config = parseEmailAnnotation(entity);
+        if (!config) continue;
 
-      emailService.registerHandlers(srv, entity, config);
+        emailService.registerHandlers(srv, entity, config);
+      } catch (err) {
+        LOG.error(`Invalid @email annotation on ${entity.name}:`, err);
+        throw err;
+      }
     }
   }
 }
