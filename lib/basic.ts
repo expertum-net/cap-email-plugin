@@ -8,6 +8,8 @@ import type { EmailAnnotationConfig, EmailPayload, IEmailService } from "./types
 const LOG = cds.log("email");
 
 export default class EmailService extends cds.Service implements IEmailService {
+  protected from: string = "";
+
   registerHandlers(
     srv: cds.ApplicationService,
     entity: cds.linked.classes.entity,
@@ -58,7 +60,7 @@ export default class EmailService extends cds.Service implements IEmailService {
     const entityKey = this.resolveEntityKey(entity, data);
 
     return {
-      from: "",
+      from: this.from,
       to,
       subject,
       body,
