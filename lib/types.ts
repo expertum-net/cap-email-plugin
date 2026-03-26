@@ -36,6 +36,7 @@ export interface GraphMailOptions {
   destination: string;
   email: { from: string };
   retryAttempts?: number;
+  maxRetryDelay?: number;
 }
 
 export interface IGraphMailService extends IEmailService {

@@ -1,5 +1,5 @@
 import GraphMailService from "../../lib/graph-mail.js";
-import { DEFAULT_RETRY_ATTEMPTS } from "../../lib/constants.js";
+import { DEFAULT_MAX_RETRY_DELAY, DEFAULT_RETRY_ATTEMPTS } from "../../lib/constants.js";
 import type { EmailPayload, GraphPayload } from "../../lib/types.js";
 
 const proto = GraphMailService.prototype;
@@ -217,6 +217,36 @@ describe("sendWithRetry", () => {
     await ctx.sendWithRetry(from, graphPayload);
 
     expect(mockSend.calls).toHaveLength(3);
+    expect(recordedDelays).toEqual([1000, 2000]);
+  });
+
+  it("caps delay at DEFAULT_MAX_RETRY_DELAY", async () => {
+    ctx.options = { retryAttempts: 20 };
+    // Attempt 17 would produce 2^17 * 1000 = 131_072_000ms without the cap
+    mockSend.rejectOnce({ status: 429 });
+
+    await ctx.sendWithRetry(from, graphPayload, 17);
+
+    expect(recordedDelays).toEqual([DEFAULT_MAX_RETRY_DELAY]);
+  });
+
+  it("respects configurable maxRetryDelay from options", async () => {
+    ctx.options = { retryAttempts: 10, maxRetryDelay: 5000 };
+    // Attempt 3 would produce 2^3 * 1000 = 8000ms, capped to 5000ms
+    mockSend.rejectOnce({ status: 429 });
+
+    await ctx.sendWithRetry(from, graphPayload, 3);
+
+    expect(recordedDelays).toEqual([5000]);
+  });
+
+  it("does not cap delay when under the ceiling", async () => {
+    ctx.options = { maxRetryDelay: 10000 };
+    // Attempt 0 produces 1000ms, attempt 1 produces 2000ms — both under 10000ms
+    mockSend.rejectOnce({ status: 429 }).rejectOnce({ status: 429 });
+
+    await ctx.sendWithRetry(from, graphPayload);
+
     expect(recordedDelays).toEqual([1000, 2000]);
   });
 });

@@ -1,6 +1,6 @@
 import cds from "@sap/cds";
 import EmailService from "./basic.js";
-import { DEFAULT_RETRY_ATTEMPTS, RETRYABLE_STATUS_CODES } from "./constants.js";
+import { DEFAULT_MAX_RETRY_DELAY, DEFAULT_RETRY_ATTEMPTS, RETRYABLE_STATUS_CODES } from "./constants.js";
 import type { EmailPayload, GraphMailOptions, GraphPayload, GraphRecipient, IGraphMailService } from "./types.js";
 
 const LOG = cds.log("email:graph");
@@ -58,7 +58,8 @@ export default class GraphMailService extends EmailService implements IGraphMail
       const status = (err as { status?: number }).status;
 
       if (status && RETRYABLE_STATUS_CODES.includes(status) && attempt < maxRetries) {
-        const delay = Math.pow(2, attempt) * 1000;
+        const maxDelay = this.options?.maxRetryDelay ?? DEFAULT_MAX_RETRY_DELAY;
+        const delay = Math.min(Math.pow(2, attempt) * 1000, maxDelay);
         LOG.warn(`Retry attempt ${attempt + 1}/${maxRetries} after ${delay}ms (status ${status})`);
         await new Promise((resolve) => setTimeout(resolve, delay));
         return this.sendWithRetry(from, payload, attempt + 1);
