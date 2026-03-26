@@ -1,5 +1,4 @@
 import cds from "@sap/cds";
-import { emailEntities } from "./entities.js";
 import EmailService from "./basic.js";
 import { DEFAULT_RETRY_ATTEMPTS, RETRYABLE_STATUS_CODES } from "./constants.js";
 import type { EmailPayload, GraphMailOptions, GraphPayload, GraphRecipient, IGraphMailService } from "./types.js";
@@ -29,24 +28,9 @@ export default class GraphMailService extends EmailService implements IGraphMail
     return super.init();
   }
 
-  async sendEmail(payload: EmailPayload): Promise<void> {
+  async dispatchEmail(payload: EmailPayload): Promise<void> {
     const graphPayload = this.buildGraphPayload(payload);
-
-    try {
-      await this.sendWithRetry(this.from, graphPayload);
-      await super.sendEmail(payload);
-    } catch (err) {
-      LOG.error("Failed to send email via Microsoft Graph", err);
-      const { EmailLog } = emailEntities();
-      await this.logEmail({
-        entityName: payload.entityName,
-        entityKey: payload.entityKey,
-        recipient: payload.to,
-        subject: payload.subject,
-        status: EmailLog.status.failed,
-        error: err instanceof Error ? err.message : String(err),
-      });
-    }
+    await this.sendWithRetry(this.from, graphPayload);
   }
 
   buildGraphPayload(payload: EmailPayload): GraphPayload {

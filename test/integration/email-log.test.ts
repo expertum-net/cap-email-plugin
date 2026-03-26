@@ -120,4 +120,58 @@ describe("EmailService.sendEmail", () => {
     });
     expect(log.error).toBeNull();
   });
+
+  it("logs a failed entry when dispatchEmail throws", async () => {
+    const original = emailService.dispatchEmail.bind(emailService);
+    emailService.dispatchEmail = async () => {
+      throw new Error("Provider connection failed");
+    };
+
+    try {
+      await emailService.sendEmail({
+        from: "sender@example.com",
+        to: "recipient@example.com",
+        subject: "Test Failure",
+        body: "<p>Hello</p>",
+        entityName: "Orders",
+        entityKey: "order-fail",
+        saveToSentItems: true,
+      });
+    } catch {
+      // Expected — sendEmail re-throws after logging
+    } finally {
+      emailService.dispatchEmail = original;
+    }
+
+    const [log] = await SELECT.from(EmailLog);
+    expect(log).toMatchObject({
+      entityName: "Orders",
+      entityKey: "order-fail",
+      recipient: "recipient@example.com",
+      subject: "Test Failure",
+      status: "failed",
+      error: "Provider connection failed",
+    });
+  });
+
+  it("re-throws error after logging failure", async () => {
+    const original = emailService.dispatchEmail.bind(emailService);
+    emailService.dispatchEmail = async () => {
+      throw new Error("Provider connection failed");
+    };
+
+    await expect(
+      emailService.sendEmail({
+        from: "sender@example.com",
+        to: "recipient@example.com",
+        subject: "Test",
+        body: "",
+        entityName: "Orders",
+        entityKey: "order-fail-2",
+        saveToSentItems: true,
+      }),
+    ).rejects.toThrow("Provider connection failed");
+
+    emailService.dispatchEmail = original;
+  });
 });
