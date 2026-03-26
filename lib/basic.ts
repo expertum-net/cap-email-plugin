@@ -26,6 +26,11 @@ export default class EmailService extends cds.Service implements IEmailService {
         const rows = Array.isArray(_data) ? _data : [_data];
 
         for (const data of rows as Record<string, unknown>[]) {
+          if (!data || typeof data !== "object") {
+            LOG.warn(`Received non-object data (${typeof data}) — skipping email for ${entity.name}`);
+            continue;
+          }
+
           try {
             if (!evaluateCondition(config.condition, data)) {
               LOG.info(`Condition not met for ${entity.name} — skipping email`);
