@@ -1,8 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "declaration": true,
-    "declarationMap": true
+    "declaration": false
   },
   "include": ["cds-plugin.ts", "lib/**/*.ts"],
   "exclude": ["test/**", "node_modules/**", "@cds-models/**"]

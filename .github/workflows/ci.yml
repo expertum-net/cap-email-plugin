@@ -74,12 +74,8 @@ jobs:
           grep -q "package/db/email-log.cds" pack-contents.txt
           grep -q "package/templates/default.html" pack-contents.txt
 
-          # Must include type declarations
-          grep -q "package/cds-plugin.d.ts" pack-contents.txt
-          grep -q "package/lib/basic.d.ts" pack-contents.txt
-
-          # Must NOT include TypeScript source
-          ! grep -q "\.ts$" pack-contents.txt || { echo "FAIL: .ts source files found in tarball"; exit 1; }
+          # Must NOT include TypeScript source or declarations
+          ! grep -q '\.ts' pack-contents.txt || { echo "FAIL: .ts files found in tarball"; exit 1; }
 
           # Must NOT include @cds-models
           ! grep -q "@cds-models" pack-contents.txt || { echo "FAIL: @cds-models found in tarball"; exit 1; }

@@ -11,18 +11,14 @@
   "main": "cds-plugin.js",
   "files": [
     "cds-plugin.js",
-    "cds-plugin.d.ts",
-    "cds-plugin.d.ts.map",
     "lib/**/*.js",
     "lib/**/*.js.map",
-    "lib/**/*.d.ts",
-    "lib/**/*.d.ts.map",
     "db",
     "templates"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "clean": "rm -f cds-plugin.js cds-plugin.js.map cds-plugin.d.ts cds-plugin.d.ts.map && rm -f lib/*.js lib/*.js.map lib/*.d.ts lib/*.d.ts.map",
+    "clean": "rm -f cds-plugin.js cds-plugin.js.map && rm -f lib/*.js lib/*.js.map",
     "prepack": "npx @cap-js/cds-typer \"*\" --outputDirectory @cds-models && tsc -p tsconfig.build.json",
     "postpack": "npm run clean",
     "watch": "npx cds watch",
