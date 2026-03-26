@@ -19,7 +19,6 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "clean": "rm -f cds-plugin.js cds-plugin.js.map && rm -f lib/*.js lib/*.js.map",
-    "prepack": "npx @cap-js/cds-typer \"*\" --outputDirectory @cds-models && tsc -p tsconfig.build.json",
     "postpack": "npm run clean",
     "watch": "npx cds watch",
     "test": "npx cds-tsx test --include '(.test.ts)$' -v",
@@ -27,7 +26,7 @@
     "lint:fix": "oxlint --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "git config core.hooksPath .githooks"
+    "prepare": "git config core.hooksPath .githooks 2>/dev/null; npx @cap-js/cds-typer \"*\" --outputDirectory @cds-models && tsc -p tsconfig.build.json"
   },
   "engines": {
     "node": ">=22"
