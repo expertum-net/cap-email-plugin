@@ -1,3 +1,4 @@
+import cds from "@sap/cds";
 import { evaluateCondition, validateCondition } from "../../lib/condition.js";
 
 describe("evaluateCondition()", () => {
@@ -169,6 +170,23 @@ describe("evaluateCondition()", () => {
   describe("error handling", () => {
     it("returns false for malformed condition", () => {
       expect(evaluateCondition("not a valid %%% expression &&&", { status: "OPEN" })).toBe(false);
+    });
+
+    it("logs error via cds.log on parse failure", () => {
+      const LOG = cds.log("email");
+      const originalError = LOG.error;
+      const errorCalls: unknown[][] = [];
+      LOG.error = ((...args: unknown[]) => {
+        errorCalls.push(args);
+      }) as typeof LOG.error;
+
+      try {
+        evaluateCondition("not a valid %%% expression &&&", { status: "OPEN" });
+        expect(errorCalls).toHaveLength(1);
+        expect(errorCalls[0][0]).toContain("Failed to parse condition");
+      } finally {
+        LOG.error = originalError;
+      }
     });
   });
 });
