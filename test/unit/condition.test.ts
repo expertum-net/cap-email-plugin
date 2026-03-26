@@ -1,4 +1,4 @@
-import { evaluateCondition } from "../../lib/condition.js";
+import { evaluateCondition, validateCondition } from "../../lib/condition.js";
 
 describe("evaluateCondition()", () => {
   describe("no condition (always send)", () => {
@@ -106,6 +106,10 @@ describe("evaluateCondition()", () => {
     it("returns false when value is out of range", () => {
       expect(evaluateCondition("amount between 10 and 100", { amount: 5 })).toBe(false);
     });
+
+    it("returns false when operands are not numeric", () => {
+      expect(evaluateCondition("amount between 10 and 100", { amount: "fifty" })).toBe(false);
+    });
   });
 
   describe("logical operators", () => {
@@ -166,5 +170,21 @@ describe("evaluateCondition()", () => {
     it("returns false for malformed condition", () => {
       expect(evaluateCondition("not a valid %%% expression &&&", { status: "OPEN" })).toBe(false);
     });
+  });
+});
+
+describe("validateCondition()", () => {
+  it("does nothing when condition is undefined", () => {
+    expect(() => validateCondition(undefined, "TestEntity")).not.toThrow();
+  });
+
+  it("does nothing for valid condition syntax", () => {
+    expect(() => validateCondition("status = 'RESOLVED'", "TestEntity")).not.toThrow();
+  });
+
+  it("throws on invalid condition syntax with entity name", () => {
+    expect(() => validateCondition("not a valid %%% expression &&&", "MyService.Tickets")).toThrow(
+      /Invalid @email\.condition on MyService\.Tickets.*not a valid %%% expression &&&/,
+    );
   });
 });
