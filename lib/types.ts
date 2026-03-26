@@ -1,5 +1,5 @@
 import cds from "@sap/cds";
-import { EmailLog } from "#cds-models/expertum/cap/email";
+import type { EmailLog } from "./entities.js";
 
 export interface EmailPayload {
   from: string;

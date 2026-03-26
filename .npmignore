@@ -1,0 +1,26 @@
+# TypeScript source (compiled JS is shipped instead)
+*.ts
+!*.d.ts
+!*.d.ts.map
+
+# Test and development
+test/
+.github/
+.githooks/
+
+# Project config
+.gitignore
+.prettierrc
+.prettierignore
+tsconfig.json
+tsconfig.build.json
+CLAUDE.md
+PLAN.md
+
+# Generated (dev-only)
+@cds-models/
+
+# Environment
+.env
+default-env.json
+.cdsrc-private.json

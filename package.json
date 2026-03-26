@@ -8,21 +8,25 @@
     "type": "git",
     "url": "git+https://github.com/MVansteenhuyse/cap-email.git"
   },
+  "main": "cds-plugin.js",
   "files": [
-    "cds-plugin.ts",
-    "lib",
+    "cds-plugin.js",
+    "lib/**/*.js",
+    "lib/**/*.js.map",
     "db",
     "templates"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "rm -f cds-plugin.js cds-plugin.js.map && rm -f lib/*.js lib/*.js.map",
+    "postpack": "npm run clean",
     "watch": "npx cds watch",
     "test": "npx cds-tsx test --include '(.test.ts)$' -v",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "git config core.hooksPath .githooks"
+    "prepare": "git config core.hooksPath .githooks 2>/dev/null; npx @cap-js/cds-typer \"*\" --outputDirectory @cds-models && tsc -p tsconfig.build.json"
   },
   "engines": {
     "node": ">=22"

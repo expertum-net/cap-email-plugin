@@ -1,5 +1,5 @@
 import cds from "@sap/cds";
-import { EmailLog } from "#cds-models/expertum/cap/email";
+import { emailEntities } from "./entities.js";
 import EmailService from "./basic.js";
 import { DEFAULT_RETRY_ATTEMPTS, RETRYABLE_STATUS_CODES, TRIGGER_TO_EVENT } from "./constants.js";
 import type {
@@ -77,6 +77,7 @@ export default class GraphMailService extends EmailService implements IGraphMail
       await super.sendEmail(payload);
     } catch (err) {
       LOG.error("Failed to send email via Microsoft Graph", err);
+      const { EmailLog } = emailEntities();
       await this.logEmail({
         entityName: payload.entityName,
         entityKey: payload.entityKey,
