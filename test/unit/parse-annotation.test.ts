@@ -173,24 +173,43 @@ describe("parseEmailAnnotation", () => {
   });
 
   describe("recipient / recipientField XOR validation", () => {
-    it("returns config when only recipient is set (object annotation)", () => {
+    it("normalizes recipient string to array (object annotation)", () => {
       const result = parseEmailAnnotation(
         fakeEntity("test.Orders", {
           "@email": { enabled: true, recipient: "support@company.com" },
         }),
       );
-      expect(result).toHaveProperty("recipient", "support@company.com");
+      expect(result?.recipient).toEqual(["support@company.com"]);
       expect(result).toHaveProperty("recipientField", undefined);
     });
 
-    it("returns config when only recipient is set (flat annotation)", () => {
+    it("normalizes recipient string to array (flat annotation)", () => {
       const result = parseEmailAnnotation(
         fakeEntity("test.Orders", {
           "@email.enabled": true,
           "@email.recipient": "support@company.com",
         }),
       );
-      expect(result).toHaveProperty("recipient", "support@company.com");
+      expect(result?.recipient).toEqual(["support@company.com"]);
+    });
+
+    it("reads recipient as array from object annotation", () => {
+      const result = parseEmailAnnotation(
+        fakeEntity("test.Orders", {
+          "@email": { enabled: true, recipient: ["a@co.com", "b@co.com"] },
+        }),
+      );
+      expect(result?.recipient).toEqual(["a@co.com", "b@co.com"]);
+    });
+
+    it("throws when recipient contains invalid email", () => {
+      expect(() =>
+        parseEmailAnnotation(
+          fakeEntity("test.Orders", {
+            "@email": { enabled: true, recipient: "not-an-email" },
+          }),
+        ),
+      ).toThrow("Invalid email in @email.recipient");
     });
 
     it("returns config when only recipientField is set", () => {

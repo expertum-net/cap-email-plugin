@@ -7,20 +7,20 @@ function callResolveRecipient(
   config: Partial<EmailAnnotationConfig>,
   data: Record<string, unknown> = {},
   req: { user: { id: string; attr: Record<string, unknown> } } = { user: { id: "", attr: {} } },
-): string | null {
+): string | string[] | null {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- calling protected method for testing
   return (proto as any).resolveRecipient(config, data, req);
 }
 
 describe("resolveRecipient — email validation", () => {
-  it("accepts valid config.recipient", () => {
-    const result = callResolveRecipient({ recipient: "admin@company.com" });
-    expect(result).toBe("admin@company.com");
+  it("returns static recipient array as-is", () => {
+    const result = callResolveRecipient({ recipient: ["admin@company.com"] });
+    expect(result).toEqual(["admin@company.com"]);
   });
 
-  it("rejects config.recipient with invalid email format", () => {
-    const result = callResolveRecipient({ recipient: "not-an-email" });
-    expect(result).toBeNull();
+  it("returns multiple static recipients as array", () => {
+    const result = callResolveRecipient({ recipient: ["a@co.com", "b@co.com"] });
+    expect(result).toEqual(["a@co.com", "b@co.com"]);
   });
 
   it("accepts valid recipientField value from entity data", () => {

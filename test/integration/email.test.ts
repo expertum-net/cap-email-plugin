@@ -334,7 +334,7 @@ describe("email plugin (integration)", () => {
       );
 
       const [log] = await SELECT.from(EmailLog);
-      expect(log.recipient).toBe("to@example.com,cc1@example.com,cc2@example.com,bcc@example.com");
+      expect(log.recipient).toBe("to1@example.com,to2@example.com,cc1@example.com,cc2@example.com,bcc@example.com");
       expect(log.status).toBe("sent");
     });
 

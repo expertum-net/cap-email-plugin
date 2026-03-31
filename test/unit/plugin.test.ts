@@ -8,7 +8,7 @@ class TestableEmailService extends EmailService {
     config: EmailAnnotationConfig,
     data: Record<string, unknown>,
     req: cds.Request,
-  ): string | null {
+  ): string | string[] | null {
     return super.resolveRecipient(config, data, req);
   }
 
@@ -105,20 +105,29 @@ describe("resolveRecipient", () => {
 
   it("uses static recipient when configured", () => {
     const result = service.resolveRecipient(
-      config({ recipient: "support@company.com" }),
+      config({ recipient: ["support@company.com"] }),
       {},
       fakeRequest({ id: "alice@example.com" }),
     );
-    expect(result).toBe("support@company.com");
+    expect(result).toEqual(["support@company.com"]);
+  });
+
+  it("returns multiple static recipients as array", () => {
+    const result = service.resolveRecipient(
+      config({ recipient: ["a@co.com", "b@co.com"] }),
+      {},
+      fakeRequest({ id: "alice@example.com" }),
+    );
+    expect(result).toEqual(["a@co.com", "b@co.com"]);
   });
 
   it("uses static recipient over recipientField and req.user", () => {
     const result = service.resolveRecipient(
-      config({ recipient: "support@company.com", recipientField: "contactEmail" }),
+      config({ recipient: ["support@company.com"], recipientField: "contactEmail" }),
       { contactEmail: "bob@example.com" },
       fakeRequest({ id: "alice@example.com" }),
     );
-    expect(result).toBe("support@company.com");
+    expect(result).toEqual(["support@company.com"]);
   });
 
   it("returns null when recipientField value is explicitly null", () => {
@@ -137,11 +146,6 @@ describe("resolveRecipient", () => {
       fakeRequest({ id: "alice@example.com" }),
     );
     expect(result).toBeNull();
-  });
-
-  it("falls through to req.user when static recipient is an empty string", () => {
-    const result = service.resolveRecipient(config({ recipient: "" }), {}, fakeRequest({ id: "alice@example.com" }));
-    expect(result).toBe("alice@example.com");
   });
 
   it("returns null when req.user is undefined", () => {
