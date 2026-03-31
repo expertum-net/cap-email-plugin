@@ -57,7 +57,7 @@ export default class EmailService extends cds.Service implements IEmailService {
     req: cds.Request,
   ): Promise<EmailPayload | null> {
     const to = this.resolveRecipient(config, data, req);
-    if (!to) return null;
+    if (!to || to.length === 0) return null;
 
     const templateContent = await loadTemplate(config.template);
     const body = renderTemplate(templateContent, data);
