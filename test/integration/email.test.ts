@@ -324,4 +324,29 @@ describe("email plugin (integration)", () => {
       expect(logs.every((l) => l.status === "sent")).toBe(true);
     });
   });
+
+  describe("cc/bcc recipients", () => {
+    it("logs comma-separated recipients (to + cc + bcc) in EmailLog", async () => {
+      await POST(
+        "/odata/v4/test/Reports",
+        { title: "Q1 Report", category: "Finance" },
+        { auth: { username: "alice", password: "" } },
+      );
+
+      const [log] = await SELECT.from(EmailLog);
+      expect(log.recipient).toBe("to@example.com,cc1@example.com,cc2@example.com,bcc@example.com");
+      expect(log.status).toBe("sent");
+    });
+
+    it("logs only to recipient when cc/bcc are not configured", async () => {
+      await POST(
+        "/odata/v4/test/Alerts",
+        { message: "Test", severity: "LOW" },
+        { auth: { username: "alice", password: "" } },
+      );
+
+      const [log] = await SELECT.from(EmailLog);
+      expect(log.recipient).toBe("alerts@company.com");
+    });
+  });
 });

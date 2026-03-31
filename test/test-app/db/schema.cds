@@ -54,6 +54,20 @@ entity Notifications : cuid, managed {
 }
 
 /**
+ * CC/BCC annotations — tests multiple recipients.
+ */
+@email: {
+  enabled:   true,
+  recipient: 'to@example.com',
+  cc:        ['cc1@example.com', 'cc2@example.com'],
+  bcc:       'bcc@example.com'
+}
+entity Reports : cuid, managed {
+  title    : String;
+  category : String;
+}
+
+/**
  * No annotation — control entity. Should never trigger emails.
  */
 entity Products : cuid, managed {
