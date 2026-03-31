@@ -86,7 +86,8 @@ export default class EmailService extends cds.Service implements IEmailService {
     let source: string;
 
     if (config.recipient) {
-      return config.recipient;
+      recipient = config.recipient;
+      source = `recipient '${config.recipient}'`;
     } else if (config.recipientField) {
       recipient = data[config.recipientField];
       source = `recipientField '${config.recipientField}'`;
@@ -96,6 +97,10 @@ export default class EmailService extends cds.Service implements IEmailService {
     } else {
       recipient = req.user?.attr?.email;
       source = "req.user.attr.email";
+    }
+
+    if (Array.isArray(recipient)) {
+      return recipient as string[];
     }
 
     if (typeof recipient !== "string" || recipient.length === 0) {
