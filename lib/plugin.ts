@@ -63,6 +63,9 @@ function normalizeRecipientList(value: unknown, field: string, entityName: strin
   if (!Array.isArray(addresses) || !addresses.every((v) => typeof v === "string")) {
     throw new Error(`Invalid @email.${field} on ${entityName}: expected string or string[], got ${typeof value}`);
   }
+  if (addresses.length === 0) {
+    throw new Error(`Empty @email.${field} on ${entityName}: at least one address required`);
+  }
   for (const addr of addresses) {
     if (!EMAIL_PATTERN.test(addr)) {
       throw new Error(`Invalid email in @email.${field} on ${entityName}: '${addr}'`);

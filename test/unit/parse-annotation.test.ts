@@ -379,5 +379,35 @@ describe("parseEmailAnnotation", () => {
         ),
       ).toThrow("Invalid @email.bcc");
     });
+
+    it("throws when recipient is an empty array", () => {
+      expect(() =>
+        parseEmailAnnotation(
+          fakeEntity("test.Orders", {
+            "@email": { enabled: true, recipient: [] },
+          }),
+        ),
+      ).toThrow("Empty @email.recipient");
+    });
+
+    it("throws when cc is an empty array", () => {
+      expect(() =>
+        parseEmailAnnotation(
+          fakeEntity("test.Orders", {
+            "@email": { enabled: true, cc: [] },
+          }),
+        ),
+      ).toThrow("Empty @email.cc");
+    });
+
+    it("throws when bcc is an empty array", () => {
+      expect(() =>
+        parseEmailAnnotation(
+          fakeEntity("test.Orders", {
+            "@email": { enabled: true, bcc: [] },
+          }),
+        ),
+      ).toThrow("Empty @email.bcc");
+    });
   });
 });
