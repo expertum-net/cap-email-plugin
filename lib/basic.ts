@@ -132,9 +132,9 @@ export default class EmailService extends cds.Service implements IEmailService {
     const logFields = {
       entityName: payload.entityName,
       entityKey: payload.entityKey,
-      recipient: payload.to.join(","),
-      cc: payload.cc?.join(","),
-      bcc: payload.bcc?.join(","),
+      recipient: payload.to,
+      cc: payload.cc,
+      bcc: payload.bcc,
       subject: payload.subject,
     };
     try {
