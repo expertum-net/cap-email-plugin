@@ -326,7 +326,7 @@ describe("email plugin (integration)", () => {
   });
 
   describe("cc/bcc recipients", () => {
-    it("logs comma-separated recipients (to + cc + bcc) in EmailLog", async () => {
+    it("logs to, cc, and bcc separately in EmailLog", async () => {
       await POST(
         "/odata/v4/test/Reports",
         { title: "Q1 Report", category: "Finance" },
@@ -334,7 +334,9 @@ describe("email plugin (integration)", () => {
       );
 
       const [log] = await SELECT.from(EmailLog);
-      expect(log.recipient).toBe("to1@example.com,to2@example.com,cc1@example.com,cc2@example.com,bcc@example.com");
+      expect(log.recipient).toBe("to1@example.com,to2@example.com");
+      expect(log.cc).toBe("cc1@example.com,cc2@example.com");
+      expect(log.bcc).toBe("bcc@example.com");
       expect(log.status).toBe("sent");
     });
 
@@ -347,6 +349,8 @@ describe("email plugin (integration)", () => {
 
       const [log] = await SELECT.from(EmailLog);
       expect(log.recipient).toBe("alerts@company.com");
+      expect(log.cc).toBeNull();
+      expect(log.bcc).toBeNull();
     });
   });
 });

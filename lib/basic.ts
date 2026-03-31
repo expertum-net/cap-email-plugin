@@ -129,34 +129,28 @@ export default class EmailService extends cds.Service implements IEmailService {
 
   async sendEmail(payload: EmailPayload): Promise<void> {
     const { EmailLog } = emailEntities();
-    const recipient = this.combineRecipients(payload);
+    const logFields = {
+      entityName: payload.entityName,
+      entityKey: payload.entityKey,
+      recipient: payload.to.join(","),
+      cc: payload.cc?.join(","),
+      bcc: payload.bcc?.join(","),
+      subject: payload.subject,
+    };
     try {
       await this.dispatchEmail(payload);
       await this.logEmail({
-        entityName: payload.entityName,
-        entityKey: payload.entityKey,
-        recipient,
-        subject: payload.subject,
+        ...logFields,
         status: EmailLog.status.sent,
       });
     } catch (err) {
       await this.logEmail({
-        entityName: payload.entityName,
-        entityKey: payload.entityKey,
-        recipient,
-        subject: payload.subject,
+        ...logFields,
         status: EmailLog.status.failed,
         error: err instanceof Error ? err.message : String(err),
       });
       throw err;
     }
-  }
-
-  private combineRecipients(payload: EmailPayload): string {
-    const all = [...payload.to];
-    if (payload.cc) all.push(...payload.cc);
-    if (payload.bcc) all.push(...payload.bcc);
-    return all.join(",");
   }
 
   async dispatchEmail(_payload: EmailPayload): Promise<void> {
