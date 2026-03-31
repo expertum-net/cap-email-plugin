@@ -3,7 +3,7 @@ import type { EmailLog } from "./entities.js";
 
 export interface EmailPayload {
   from: string;
-  to: string;
+  to: string | string[];
   cc?: string[];
   bcc?: string[];
   subject: string;
@@ -58,7 +58,7 @@ export interface EmailAnnotationConfig {
   template: string;
   trigger: string[];
   condition: string | undefined;
-  recipient: string | undefined;
+  recipient: string[] | undefined;
   recipientField: string | undefined;
   cc: string[] | undefined;
   bcc: string[] | undefined;

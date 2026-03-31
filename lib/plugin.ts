@@ -38,6 +38,9 @@ export function parseEmailAnnotation(entity: cds.linked.classes.entity): EmailAn
     );
   }
 
+  if (merged.recipient !== undefined) {
+    merged.recipient = normalizeRecipientList(merged.recipient, "recipient", entity.name);
+  }
   if (merged.cc !== undefined) {
     merged.cc = normalizeRecipientList(merged.cc, "cc", entity.name);
   }

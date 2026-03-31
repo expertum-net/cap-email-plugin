@@ -81,14 +81,15 @@ export default class EmailService extends cds.Service implements IEmailService {
     config: EmailAnnotationConfig,
     data: Record<string, unknown>,
     req: cds.Request,
-  ): string | null {
+  ): string | string[] | null {
+    if (config.recipient) {
+      return config.recipient;
+    }
+
     let recipient: unknown;
     let source: string;
 
-    if (config.recipient) {
-      recipient = config.recipient;
-      source = `recipient '${config.recipient}'`;
-    } else if (config.recipientField) {
+    if (config.recipientField) {
       recipient = data[config.recipientField];
       source = `recipientField '${config.recipientField}'`;
     } else if (req.user?.id && EMAIL_PATTERN.test(req.user.id)) {
@@ -155,7 +156,7 @@ export default class EmailService extends cds.Service implements IEmailService {
   }
 
   private combineRecipients(payload: EmailPayload): string {
-    const all = [payload.to];
+    const all = [...this.formatRecipients(payload.to)];
     if (payload.cc) all.push(...payload.cc);
     if (payload.bcc) all.push(...payload.bcc);
     return all.join(",");
