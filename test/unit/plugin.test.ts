@@ -8,7 +8,7 @@ class TestableEmailService extends EmailService {
     config: EmailAnnotationConfig,
     data: Record<string, unknown>,
     req: cds.Request,
-  ): string | string[] | null {
+  ): string[] | null {
     return super.resolveRecipient(config, data, req);
   }
 
@@ -41,7 +41,7 @@ function fakeRequest(opts: { id?: string; attrEmail?: string } = {}): cds.Reques
 describe("resolveRecipient", () => {
   it("uses req.user.id when it contains a valid email", () => {
     const result = service.resolveRecipient(config(), {}, fakeRequest({ id: "alice@example.com" }));
-    expect(result).toBe("alice@example.com");
+    expect(result).toEqual(["alice@example.com"]);
   });
 
   it("falls back to req.user.attr.email when req.user.id is not an email", () => {
@@ -50,7 +50,7 @@ describe("resolveRecipient", () => {
       {},
       fakeRequest({ id: "alice123", attrEmail: "alice@example.com" }),
     );
-    expect(result).toBe("alice@example.com");
+    expect(result).toEqual(["alice@example.com"]);
   });
 
   it("reads from entity data field when recipientField is specified", () => {
@@ -59,7 +59,7 @@ describe("resolveRecipient", () => {
       { contactEmail: "bob@example.com" },
       fakeRequest({ id: "alice@example.com" }),
     );
-    expect(result).toBe("bob@example.com");
+    expect(result).toEqual(["bob@example.com"]);
   });
 
   it("returns null when neither req.user.id nor req.user.attr.email resolve", () => {
@@ -100,7 +100,7 @@ describe("resolveRecipient", () => {
       { contactEmail: "bob@example.com" },
       fakeRequest({ id: "alice@example.com" }),
     );
-    expect(result).toBe("bob@example.com");
+    expect(result).toEqual(["bob@example.com"]);
   });
 
   it("uses static recipient when configured", () => {

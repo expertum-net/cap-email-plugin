@@ -32,7 +32,7 @@ describe("init", () => {
 
 const basePayload: EmailPayload = {
   from: "sender@example.com",
-  to: "recipient@example.com",
+  to: ["recipient@example.com"],
   subject: "Test Subject",
   body: "<p>Hello</p>",
   entityName: "Orders",
@@ -150,19 +150,19 @@ describe("buildGraphPayload", () => {
 });
 
 describe("formatGraphRecipients", () => {
-  it("maps a single email to Graph recipient format", () => {
-    const result = proto.formatGraphRecipients("alice@example.com");
+  it("maps a single-element array to Graph recipient format", () => {
+    const result = proto.formatGraphRecipients(["alice@example.com"]);
 
     expect(result).toEqual([{ emailAddress: { address: "alice@example.com" } }]);
   });
 
   it("preserves the exact email address", () => {
-    const result = proto.formatGraphRecipients("Bob.Smith+tag@sub.domain.com");
+    const result = proto.formatGraphRecipients(["Bob.Smith+tag@sub.domain.com"]);
 
     expect(result[0].emailAddress.address).toBe("Bob.Smith+tag@sub.domain.com");
   });
 
-  it("maps an array of emails to Graph recipient format", () => {
+  it("maps multiple emails to Graph recipient format", () => {
     const result = proto.formatGraphRecipients(["a@b.com", "c@d.com"]);
 
     expect(result).toEqual([{ emailAddress: { address: "a@b.com" } }, { emailAddress: { address: "c@d.com" } }]);

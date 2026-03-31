@@ -7,7 +7,7 @@ function callResolveRecipient(
   config: Partial<EmailAnnotationConfig>,
   data: Record<string, unknown> = {},
   req: { user: { id: string; attr: Record<string, unknown> } } = { user: { id: "", attr: {} } },
-): string | string[] | null {
+): string[] | null {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- calling protected method for testing
   return (proto as any).resolveRecipient(config, data, req);
 }
@@ -25,7 +25,7 @@ describe("resolveRecipient — email validation", () => {
 
   it("accepts valid recipientField value from entity data", () => {
     const result = callResolveRecipient({ recipientField: "contactEmail" }, { contactEmail: "contact@example.com" });
-    expect(result).toBe("contact@example.com");
+    expect(result).toEqual(["contact@example.com"]);
   });
 
   it("rejects recipientField value with invalid email format", () => {
@@ -40,7 +40,7 @@ describe("resolveRecipient — email validation", () => {
 
   it("accepts valid req.user.id when it matches email pattern", () => {
     const result = callResolveRecipient({}, {}, { user: { id: "alice@example.com", attr: {} } });
-    expect(result).toBe("alice@example.com");
+    expect(result).toEqual(["alice@example.com"]);
   });
 
   it("falls through to req.user.attr.email when req.user.id is not an email", () => {
@@ -51,7 +51,7 @@ describe("resolveRecipient — email validation", () => {
         user: { id: "some-guid-123", attr: { email: "alice@example.com" } },
       },
     );
-    expect(result).toBe("alice@example.com");
+    expect(result).toEqual(["alice@example.com"]);
   });
 
   it("accepts valid req.user.attr.email", () => {
@@ -62,7 +62,7 @@ describe("resolveRecipient — email validation", () => {
         user: { id: "guid", attr: { email: "bob@example.com" } },
       },
     );
-    expect(result).toBe("bob@example.com");
+    expect(result).toEqual(["bob@example.com"]);
   });
 
   it("rejects req.user.attr.email with invalid email format", () => {

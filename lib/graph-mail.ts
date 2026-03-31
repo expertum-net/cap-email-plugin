@@ -51,8 +51,8 @@ export default class GraphMailService extends EmailService implements IGraphMail
     return { message, saveToSentItems: payload.saveToSentItems };
   }
 
-  formatGraphRecipients(email: string | string[]): GraphRecipient[] {
-    return this.formatRecipients(email).map((addr) => ({
+  formatGraphRecipients(recipients: string[]): GraphRecipient[] {
+    return recipients.map((addr) => ({
       emailAddress: { address: addr },
     }));
   }

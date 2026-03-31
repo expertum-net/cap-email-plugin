@@ -121,7 +121,7 @@ describe("EmailService.sendEmail", () => {
   it("logs a sent entry with entity context from payload", async () => {
     await emailService.sendEmail({
       from: "sender@example.com",
-      to: "recipient@example.com",
+      to: ["recipient@example.com"],
       subject: "Test Subject",
       body: "<p>Hello</p>",
       entityName: "Orders",
@@ -149,7 +149,7 @@ describe("EmailService.sendEmail", () => {
     try {
       await emailService.sendEmail({
         from: "sender@example.com",
-        to: "recipient@example.com",
+        to: ["recipient@example.com"],
         subject: "Test Failure",
         body: "<p>Hello</p>",
         entityName: "Orders",
@@ -182,7 +182,7 @@ describe("EmailService.sendEmail", () => {
     await expect(
       emailService.sendEmail({
         from: "sender@example.com",
-        to: "recipient@example.com",
+        to: ["recipient@example.com"],
         subject: "Test",
         body: "",
         entityName: "Orders",

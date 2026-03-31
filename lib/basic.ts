@@ -81,14 +81,16 @@ export default class EmailService extends cds.Service implements IEmailService {
     config: EmailAnnotationConfig,
     data: Record<string, unknown>,
     req: cds.Request,
-  ): string | string[] | null {
+  ): string[] | null {
+    // Static recipient — already validated and normalized to string[] by parseEmailAnnotation
+    if (config.recipient) {
+      return config.recipient;
+    }
+
     let recipient: unknown;
     let source: string;
 
-    if (config.recipient) {
-      recipient = config.recipient;
-      source = `recipient '${config.recipient}'`;
-    } else if (config.recipientField) {
+    if (config.recipientField) {
       recipient = data[config.recipientField];
       source = `recipientField '${config.recipientField}'`;
     } else if (req.user?.id && EMAIL_PATTERN.test(req.user.id)) {
@@ -97,10 +99,6 @@ export default class EmailService extends cds.Service implements IEmailService {
     } else {
       recipient = req.user?.attr?.email;
       source = "req.user.attr.email";
-    }
-
-    if (Array.isArray(recipient)) {
-      return recipient as string[];
     }
 
     if (typeof recipient !== "string" || recipient.length === 0) {
@@ -113,7 +111,7 @@ export default class EmailService extends cds.Service implements IEmailService {
       return null;
     }
 
-    return recipient;
+    return [recipient];
   }
 
   protected resolveSubject(config: EmailAnnotationConfig, data: Record<string, unknown>): string {
@@ -154,12 +152,8 @@ export default class EmailService extends cds.Service implements IEmailService {
     }
   }
 
-  protected formatRecipients(input: string | string[]): string[] {
-    return Array.isArray(input) ? input : [input];
-  }
-
   private combineRecipients(payload: EmailPayload): string {
-    const all = [...this.formatRecipients(payload.to)];
+    const all = [...payload.to];
     if (payload.cc) all.push(...payload.cc);
     if (payload.bcc) all.push(...payload.bcc);
     return all.join(",");

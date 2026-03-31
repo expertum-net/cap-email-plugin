@@ -3,7 +3,7 @@ import type { EmailLog } from "./entities.js";
 
 export interface EmailPayload {
   from: string;
-  to: string | string[];
+  to: string[];
   cc?: string[];
   bcc?: string[];
   subject: string;
@@ -49,7 +49,7 @@ export interface GraphMailOptions {
 
 export interface IGraphMailService extends IEmailProvider {
   buildGraphPayload(payload: EmailPayload): GraphPayload;
-  formatGraphRecipients(email: string | string[]): GraphRecipient[];
+  formatGraphRecipients(recipients: string[]): GraphRecipient[];
   sendWithRetry(from: string, payload: GraphPayload, attempt?: number): Promise<void>;
 }
 
