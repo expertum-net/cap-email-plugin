@@ -1,5 +1,5 @@
 import cds from "@sap/cds";
-import { ANNOTATION_PREFIX } from "./constants.js";
+import { ANNOTATION_PREFIX, EMAIL_PATTERN } from "./constants.js";
 import { validateCondition } from "./condition.js";
 import { type EmailAnnotationConfig, type IEmailService, EMAIL_DEFAULTS } from "./types.js";
 
@@ -38,6 +38,13 @@ export function parseEmailAnnotation(entity: cds.linked.classes.entity): EmailAn
     );
   }
 
+  if (merged.cc !== undefined) {
+    merged.cc = normalizeRecipientList(merged.cc, "cc", entity.name);
+  }
+  if (merged.bcc !== undefined) {
+    merged.bcc = normalizeRecipientList(merged.bcc, "bcc", entity.name);
+  }
+
   validateCondition(merged.condition, entity.name);
 
   const template = objectAnnotation?.template ?? flat.template ?? EMAIL_DEFAULTS.template;
@@ -46,6 +53,19 @@ export function parseEmailAnnotation(entity: cds.linked.classes.entity): EmailAn
     ...merged,
     template: template === EMAIL_DEFAULTS.template ? entityName : template,
   };
+}
+
+function normalizeRecipientList(value: unknown, field: string, entityName: string): string[] {
+  const addresses = typeof value === "string" ? [value] : value;
+  if (!Array.isArray(addresses) || !addresses.every((v) => typeof v === "string")) {
+    throw new Error(`Invalid @email.${field} on ${entityName}: expected string or string[], got ${typeof value}`);
+  }
+  for (const addr of addresses) {
+    if (!EMAIL_PATTERN.test(addr)) {
+      throw new Error(`Invalid email in @email.${field} on ${entityName}: '${addr}'`);
+    }
+  }
+  return addresses as string[];
 }
 
 export async function registerEmailHandlers() {
