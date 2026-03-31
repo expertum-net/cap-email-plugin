@@ -4,6 +4,8 @@ import type { EmailLog } from "./entities.js";
 export interface EmailPayload {
   from: string;
   to: string;
+  cc?: string[];
+  bcc?: string[];
   subject: string;
   body: string;
   entityName: string;
@@ -30,6 +32,8 @@ export interface GraphPayload {
     subject: string;
     body: { contentType: "HTML"; content: string };
     toRecipients: GraphRecipient[];
+    ccRecipients?: GraphRecipient[];
+    bccRecipients?: GraphRecipient[];
     importance: "normal";
   };
   saveToSentItems: boolean;
@@ -45,7 +49,7 @@ export interface GraphMailOptions {
 
 export interface IGraphMailService extends IEmailProvider {
   buildGraphPayload(payload: EmailPayload): GraphPayload;
-  formatGraphRecipients(email: string): GraphRecipient[];
+  formatGraphRecipients(email: string | string[]): GraphRecipient[];
   sendWithRetry(from: string, payload: GraphPayload, attempt?: number): Promise<void>;
 }
 
@@ -56,6 +60,8 @@ export interface EmailAnnotationConfig {
   condition: string | undefined;
   recipient: string | undefined;
   recipientField: string | undefined;
+  cc: string[] | undefined;
+  bcc: string[] | undefined;
   subject: string | undefined;
   rollback: boolean;
   saveToSentItems: boolean;
@@ -68,6 +74,8 @@ export const EMAIL_DEFAULTS: EmailAnnotationConfig = {
   condition: undefined,
   recipient: undefined,
   recipientField: undefined,
+  cc: undefined,
+  bcc: undefined,
   subject: undefined,
   rollback: false,
   saveToSentItems: true,
