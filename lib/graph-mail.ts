@@ -34,19 +34,27 @@ export default class GraphMailService extends EmailService implements IGraphMail
   }
 
   buildGraphPayload(payload: EmailPayload): GraphPayload {
-    return {
-      message: {
-        subject: payload.subject,
-        body: { contentType: "HTML", content: payload.body },
-        toRecipients: this.formatGraphRecipients(payload.to),
-        importance: "normal",
-      },
-      saveToSentItems: payload.saveToSentItems,
+    const message: GraphPayload["message"] = {
+      subject: payload.subject,
+      body: { contentType: "HTML", content: payload.body },
+      toRecipients: this.formatGraphRecipients(payload.to),
+      importance: "normal",
     };
+
+    if (payload.cc?.length) {
+      message.ccRecipients = this.formatGraphRecipients(payload.cc);
+    }
+    if (payload.bcc?.length) {
+      message.bccRecipients = this.formatGraphRecipients(payload.bcc);
+    }
+
+    return { message, saveToSentItems: payload.saveToSentItems };
   }
 
-  formatGraphRecipients(email: string): GraphRecipient[] {
-    return [{ emailAddress: { address: email } }];
+  formatGraphRecipients(recipients: string[]): GraphRecipient[] {
+    return recipients.map((addr) => ({
+      emailAddress: { address: addr },
+    }));
   }
 
   async sendWithRetry(from: string, payload: GraphPayload, attempt = 0): Promise<void> {

@@ -20,7 +20,7 @@ describe("EmailService.logEmail", () => {
     await emailService.logEmail({
       entityName: "Orders",
       entityKey: "order-123",
-      recipient: "test@example.com",
+      recipient: ["test@example.com"],
       subject: "Order Confirmed",
       status: EmailLog.status.sent,
     });
@@ -30,7 +30,7 @@ describe("EmailService.logEmail", () => {
     expect(logs[0]).toMatchObject({
       entityName: "Orders",
       entityKey: "order-123",
-      recipient: "test@example.com",
+      recipient: ["test@example.com"],
       subject: "Order Confirmed",
       status: "sent",
     });
@@ -41,7 +41,7 @@ describe("EmailService.logEmail", () => {
     await emailService.logEmail({
       entityName: "Tickets",
       entityKey: "ticket-456",
-      recipient: "user@example.com",
+      recipient: ["user@example.com"],
       subject: "Ticket Update",
       status: EmailLog.status.failed,
       error: "SMTP connection refused",
@@ -52,7 +52,7 @@ describe("EmailService.logEmail", () => {
     expect(logs[0]).toMatchObject({
       entityName: "Tickets",
       entityKey: "ticket-456",
-      recipient: "user@example.com",
+      recipient: ["user@example.com"],
       subject: "Ticket Update",
       status: "failed",
       error: "SMTP connection refused",
@@ -63,7 +63,7 @@ describe("EmailService.logEmail", () => {
     await emailService.logEmail({
       entityName: "Orders",
       entityKey: "key-789",
-      recipient: "alice@example.com",
+      recipient: ["alice@example.com"],
       subject: "Full Fields Test",
       status: EmailLog.status.sent,
     });
@@ -71,7 +71,7 @@ describe("EmailService.logEmail", () => {
     const [log] = await SELECT.from(EmailLog);
     expect(log.entityName).toBe("Orders");
     expect(log.entityKey).toBe("key-789");
-    expect(log.recipient).toBe("alice@example.com");
+    expect(log.recipient).toEqual(["alice@example.com"]);
     expect(log.subject).toBe("Full Fields Test");
     expect(log.status).toBe("sent");
     expect(log.ID).toBeDefined();
@@ -82,7 +82,7 @@ describe("EmailService.logEmail", () => {
     const entry = {
       entityName: "Orders",
       entityKey: "dup-test",
-      recipient: "test@example.com",
+      recipient: ["test@example.com"],
       subject: "Test",
       status: EmailLog.status.sent,
     };
@@ -121,7 +121,7 @@ describe("EmailService.sendEmail", () => {
   it("logs a sent entry with entity context from payload", async () => {
     await emailService.sendEmail({
       from: "sender@example.com",
-      to: "recipient@example.com",
+      to: ["recipient@example.com"],
       subject: "Test Subject",
       body: "<p>Hello</p>",
       entityName: "Orders",
@@ -133,7 +133,7 @@ describe("EmailService.sendEmail", () => {
     expect(log).toMatchObject({
       entityName: "Orders",
       entityKey: "order-001",
-      recipient: "recipient@example.com",
+      recipient: ["recipient@example.com"],
       subject: "Test Subject",
       status: "sent",
     });
@@ -149,7 +149,7 @@ describe("EmailService.sendEmail", () => {
     try {
       await emailService.sendEmail({
         from: "sender@example.com",
-        to: "recipient@example.com",
+        to: ["recipient@example.com"],
         subject: "Test Failure",
         body: "<p>Hello</p>",
         entityName: "Orders",
@@ -166,7 +166,7 @@ describe("EmailService.sendEmail", () => {
     expect(log).toMatchObject({
       entityName: "Orders",
       entityKey: "order-fail",
-      recipient: "recipient@example.com",
+      recipient: ["recipient@example.com"],
       subject: "Test Failure",
       status: "failed",
       error: "Provider connection failed",
@@ -182,7 +182,7 @@ describe("EmailService.sendEmail", () => {
     await expect(
       emailService.sendEmail({
         from: "sender@example.com",
-        to: "recipient@example.com",
+        to: ["recipient@example.com"],
         subject: "Test",
         body: "",
         entityName: "Orders",

@@ -28,7 +28,7 @@ describe("email plugin (integration)", () => {
       const logs = await SELECT.from(EmailLog);
       expect(logs).toHaveLength(1);
       expect(logs[0]).toMatchObject({
-        recipient: "alice@example.com",
+        recipient: ["alice@example.com"],
         status: "sent",
       });
       expect(logs[0].entityName).toContain("Orders");
@@ -48,7 +48,7 @@ describe("email plugin (integration)", () => {
       const logs = await SELECT.from(EmailLog);
       expect(logs).toHaveLength(1);
       expect(logs[0]).toMatchObject({
-        recipient: "bob@example.com",
+        recipient: ["bob@example.com"],
         status: "sent",
       });
     });
@@ -78,7 +78,7 @@ describe("email plugin (integration)", () => {
       const logs = await SELECT.from(EmailLog);
       expect(logs).toHaveLength(1);
       expect(logs[0]).toMatchObject({
-        recipient: "bob@example.com",
+        recipient: ["bob@example.com"],
         status: "sent",
       });
     });
@@ -125,7 +125,7 @@ describe("email plugin (integration)", () => {
 
       const [log] = await SELECT.from(EmailLog);
       expect(log.status).toBe("sent");
-      expect(log.recipient).toBe("alice@example.com");
+      expect(log.recipient).toEqual(["alice@example.com"]);
     });
 
     it("escapes HTML entities in subject placeholders", async () => {
@@ -190,7 +190,7 @@ describe("email plugin (integration)", () => {
 
       const logs = await SELECT.from(EmailLog);
       expect(logs).toHaveLength(1);
-      expect(logs[0].recipient).toBe("bob@example.com");
+      expect(logs[0].recipient).toEqual(["bob@example.com"]);
     });
 
     it("always sends when no condition is set (Orders)", async () => {
@@ -255,7 +255,7 @@ describe("email plugin (integration)", () => {
       );
 
       const [log] = await SELECT.from(EmailLog);
-      expect(log.recipient).toBe("custom@example.com");
+      expect(log.recipient).toEqual(["custom@example.com"]);
     });
 
     it("resolves static recipient from annotation", async () => {
@@ -269,7 +269,7 @@ describe("email plugin (integration)", () => {
       );
 
       const [log] = await SELECT.from(EmailLog);
-      expect(log.recipient).toBe("alerts@company.com");
+      expect(log.recipient).toEqual(["alerts@company.com"]);
     });
 
     it("resolves recipient from req.user for Orders (default)", async () => {
@@ -283,7 +283,7 @@ describe("email plugin (integration)", () => {
       );
 
       const [log] = await SELECT.from(EmailLog);
-      expect(log.recipient).toBe("alice@example.com");
+      expect(log.recipient).toEqual(["alice@example.com"]);
     });
 
     it("skips email gracefully when user has no resolvable email", async () => {
@@ -322,6 +322,35 @@ describe("email plugin (integration)", () => {
       const logs = await SELECT.from(EmailLog);
       expect(logs).toHaveLength(3);
       expect(logs.every((l) => l.status === "sent")).toBe(true);
+    });
+  });
+
+  describe("cc/bcc recipients", () => {
+    it("logs to, cc, and bcc separately in EmailLog", async () => {
+      await POST(
+        "/odata/v4/test/Reports",
+        { title: "Q1 Report", category: "Finance" },
+        { auth: { username: "alice", password: "" } },
+      );
+
+      const [log] = await SELECT.from(EmailLog);
+      expect(log.recipient).toEqual(["to1@example.com", "to2@example.com"]);
+      expect(log.cc).toEqual(["cc1@example.com", "cc2@example.com"]);
+      expect(log.bcc).toEqual(["bcc@example.com"]);
+      expect(log.status).toBe("sent");
+    });
+
+    it("logs only to recipient when cc/bcc are not configured", async () => {
+      await POST(
+        "/odata/v4/test/Alerts",
+        { message: "Test", severity: "LOW" },
+        { auth: { username: "alice", password: "" } },
+      );
+
+      const [log] = await SELECT.from(EmailLog);
+      expect(log.recipient).toEqual(["alerts@company.com"]);
+      expect(log.cc).toBeNull();
+      expect(log.bcc).toBeNull();
     });
   });
 });

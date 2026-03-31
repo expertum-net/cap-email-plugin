@@ -57,7 +57,7 @@ export default class EmailService extends cds.Service implements IEmailService {
     req: cds.Request,
   ): Promise<EmailPayload | null> {
     const to = this.resolveRecipient(config, data, req);
-    if (!to) return null;
+    if (!to || to.length === 0) return null;
 
     const templateContent = await loadTemplate(config.template);
     const body = renderTemplate(templateContent, data);
@@ -67,6 +67,8 @@ export default class EmailService extends cds.Service implements IEmailService {
     return {
       from: this.from,
       to,
+      cc: config.cc,
+      bcc: config.bcc,
       subject,
       body,
       entityName: entity.name,
@@ -79,14 +81,16 @@ export default class EmailService extends cds.Service implements IEmailService {
     config: EmailAnnotationConfig,
     data: Record<string, unknown>,
     req: cds.Request,
-  ): string | null {
+  ): string[] | null {
+    // Static recipient — already validated and normalized to string[] by parseEmailAnnotation
+    if (config.recipient) {
+      return config.recipient;
+    }
+
     let recipient: unknown;
     let source: string;
 
-    if (config.recipient) {
-      recipient = config.recipient;
-      source = `recipient '${config.recipient}'`;
-    } else if (config.recipientField) {
+    if (config.recipientField) {
       recipient = data[config.recipientField];
       source = `recipientField '${config.recipientField}'`;
     } else if (req.user?.id && EMAIL_PATTERN.test(req.user.id)) {
@@ -107,7 +111,7 @@ export default class EmailService extends cds.Service implements IEmailService {
       return null;
     }
 
-    return recipient;
+    return [recipient];
   }
 
   protected resolveSubject(config: EmailAnnotationConfig, data: Record<string, unknown>): string {
@@ -125,21 +129,23 @@ export default class EmailService extends cds.Service implements IEmailService {
 
   async sendEmail(payload: EmailPayload): Promise<void> {
     const { EmailLog } = emailEntities();
+    const logFields = {
+      entityName: payload.entityName,
+      entityKey: payload.entityKey,
+      recipient: payload.to,
+      cc: payload.cc,
+      bcc: payload.bcc,
+      subject: payload.subject,
+    };
     try {
       await this.dispatchEmail(payload);
       await this.logEmail({
-        entityName: payload.entityName,
-        entityKey: payload.entityKey,
-        recipient: payload.to,
-        subject: payload.subject,
+        ...logFields,
         status: EmailLog.status.sent,
       });
     } catch (err) {
       await this.logEmail({
-        entityName: payload.entityName,
-        entityKey: payload.entityKey,
-        recipient: payload.to,
-        subject: payload.subject,
+        ...logFields,
         status: EmailLog.status.failed,
         error: err instanceof Error ? err.message : String(err),
       });

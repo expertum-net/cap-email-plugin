@@ -5,5 +5,6 @@ service TestService {
   entity Tickets       as projection on my.Tickets;
   entity Alerts        as projection on my.Alerts;
   entity Notifications as projection on my.Notifications;
+  entity Reports       as projection on my.Reports;
   entity Products      as projection on my.Products;
 }

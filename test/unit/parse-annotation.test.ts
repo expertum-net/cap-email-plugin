@@ -51,6 +51,8 @@ describe("parseEmailAnnotation", () => {
         condition: undefined,
         recipient: undefined,
         recipientField: undefined,
+        cc: undefined,
+        bcc: undefined,
         subject: undefined,
         rollback: false,
         saveToSentItems: true,
@@ -171,24 +173,43 @@ describe("parseEmailAnnotation", () => {
   });
 
   describe("recipient / recipientField XOR validation", () => {
-    it("returns config when only recipient is set (object annotation)", () => {
+    it("normalizes recipient string to array (object annotation)", () => {
       const result = parseEmailAnnotation(
         fakeEntity("test.Orders", {
           "@email": { enabled: true, recipient: "support@company.com" },
         }),
       );
-      expect(result).toHaveProperty("recipient", "support@company.com");
+      expect(result?.recipient).toEqual(["support@company.com"]);
       expect(result).toHaveProperty("recipientField", undefined);
     });
 
-    it("returns config when only recipient is set (flat annotation)", () => {
+    it("normalizes recipient string to array (flat annotation)", () => {
       const result = parseEmailAnnotation(
         fakeEntity("test.Orders", {
           "@email.enabled": true,
           "@email.recipient": "support@company.com",
         }),
       );
-      expect(result).toHaveProperty("recipient", "support@company.com");
+      expect(result?.recipient).toEqual(["support@company.com"]);
+    });
+
+    it("reads recipient as array from object annotation", () => {
+      const result = parseEmailAnnotation(
+        fakeEntity("test.Orders", {
+          "@email": { enabled: true, recipient: ["a@co.com", "b@co.com"] },
+        }),
+      );
+      expect(result?.recipient).toEqual(["a@co.com", "b@co.com"]);
+    });
+
+    it("throws when recipient contains invalid email", () => {
+      expect(() =>
+        parseEmailAnnotation(
+          fakeEntity("test.Orders", {
+            "@email": { enabled: true, recipient: "not-an-email" },
+          }),
+        ),
+      ).toThrow("Invalid email in @email.recipient");
     });
 
     it("returns config when only recipientField is set", () => {
@@ -271,6 +292,122 @@ describe("parseEmailAnnotation", () => {
       );
       expect(result).toHaveProperty("rollback", true);
       expect(EMAIL_DEFAULTS.rollback).toBe(false);
+    });
+  });
+
+  describe("cc and bcc annotations", () => {
+    it("normalizes cc string to array from flat annotation", () => {
+      const result = parseEmailAnnotation(
+        fakeEntity("test.Orders", {
+          "@email.enabled": true,
+          "@email.cc": "cc@example.com",
+        }),
+      );
+      expect(result).toHaveProperty("cc", ["cc@example.com"]);
+    });
+
+    it("reads cc as array from object annotation", () => {
+      const result = parseEmailAnnotation(
+        fakeEntity("test.Orders", {
+          "@email": { enabled: true, cc: ["a@b.com", "c@d.com"] },
+        }),
+      );
+      expect(result).toHaveProperty("cc", ["a@b.com", "c@d.com"]);
+    });
+
+    it("normalizes bcc string to array from flat annotation", () => {
+      const result = parseEmailAnnotation(
+        fakeEntity("test.Orders", {
+          "@email.enabled": true,
+          "@email.bcc": "bcc@example.com",
+        }),
+      );
+      expect(result).toHaveProperty("bcc", ["bcc@example.com"]);
+    });
+
+    it("reads bcc as array from object annotation", () => {
+      const result = parseEmailAnnotation(
+        fakeEntity("test.Orders", {
+          "@email": { enabled: true, bcc: ["a@b.com", "c@d.com"] },
+        }),
+      );
+      expect(result).toHaveProperty("bcc", ["a@b.com", "c@d.com"]);
+    });
+
+    it("defaults cc and bcc to undefined", () => {
+      const result = parseEmailAnnotation(fakeEntity("test.Orders", { "@email.enabled": true }));
+      expect(result).toHaveProperty("cc", undefined);
+      expect(result).toHaveProperty("bcc", undefined);
+    });
+
+    it("throws when cc contains invalid email", () => {
+      expect(() =>
+        parseEmailAnnotation(
+          fakeEntity("test.Orders", {
+            "@email": { enabled: true, cc: ["not-an-email"] },
+          }),
+        ),
+      ).toThrow("Invalid email in @email.cc");
+    });
+
+    it("throws when bcc contains invalid email", () => {
+      expect(() =>
+        parseEmailAnnotation(
+          fakeEntity("test.Orders", {
+            "@email": { enabled: true, bcc: ["not-an-email"] },
+          }),
+        ),
+      ).toThrow("Invalid email in @email.bcc");
+    });
+
+    it("throws when cc is not string or string[]", () => {
+      expect(() =>
+        parseEmailAnnotation(
+          fakeEntity("test.Orders", {
+            "@email": { enabled: true, cc: 42 },
+          }),
+        ),
+      ).toThrow("Invalid @email.cc");
+    });
+
+    it("throws when bcc is not string or string[]", () => {
+      expect(() =>
+        parseEmailAnnotation(
+          fakeEntity("test.Orders", {
+            "@email": { enabled: true, bcc: true },
+          }),
+        ),
+      ).toThrow("Invalid @email.bcc");
+    });
+
+    it("throws when recipient is an empty array", () => {
+      expect(() =>
+        parseEmailAnnotation(
+          fakeEntity("test.Orders", {
+            "@email": { enabled: true, recipient: [] },
+          }),
+        ),
+      ).toThrow("Empty @email.recipient");
+    });
+
+    it("throws when cc is an empty array", () => {
+      expect(() =>
+        parseEmailAnnotation(
+          fakeEntity("test.Orders", {
+            "@email": { enabled: true, cc: [] },
+          }),
+        ),
+      ).toThrow("Empty @email.cc");
+    });
+
+    it("throws when bcc is an empty array", () => {
+      expect(() =>
+        parseEmailAnnotation(
+          fakeEntity("test.Orders", {
+            "@email": { enabled: true, bcc: [] },
+          }),
+        ),
+      ).toThrow("Empty @email.bcc");
     });
   });
 });
