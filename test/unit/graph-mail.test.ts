@@ -101,6 +101,52 @@ describe("buildGraphPayload", () => {
     const result = proto.buildGraphPayload(basePayload);
     expect(result.message.importance).toBe("normal");
   });
+
+  it("includes ccRecipients when cc is provided", () => {
+    const result = proto.buildGraphPayload({ ...basePayload, cc: ["cc@example.com"] });
+    expect(result.message.ccRecipients).toEqual([{ emailAddress: { address: "cc@example.com" } }]);
+  });
+
+  it("includes bccRecipients when bcc is provided", () => {
+    const result = proto.buildGraphPayload({ ...basePayload, bcc: ["bcc@example.com"] });
+    expect(result.message.bccRecipients).toEqual([{ emailAddress: { address: "bcc@example.com" } }]);
+  });
+
+  it("omits ccRecipients when cc is undefined", () => {
+    const result = proto.buildGraphPayload(basePayload);
+    expect(result.message.ccRecipients).toBeUndefined();
+  });
+
+  it("omits bccRecipients when bcc is undefined", () => {
+    const result = proto.buildGraphPayload(basePayload);
+    expect(result.message.bccRecipients).toBeUndefined();
+  });
+
+  it("omits ccRecipients when cc is empty array", () => {
+    const result = proto.buildGraphPayload({ ...basePayload, cc: [] });
+    expect(result.message.ccRecipients).toBeUndefined();
+  });
+
+  it("omits bccRecipients when bcc is empty array", () => {
+    const result = proto.buildGraphPayload({ ...basePayload, bcc: [] });
+    expect(result.message.bccRecipients).toBeUndefined();
+  });
+
+  it("includes multiple cc and bcc recipients", () => {
+    const result = proto.buildGraphPayload({
+      ...basePayload,
+      cc: ["cc1@example.com", "cc2@example.com"],
+      bcc: ["bcc1@example.com", "bcc2@example.com"],
+    });
+    expect(result.message.ccRecipients).toEqual([
+      { emailAddress: { address: "cc1@example.com" } },
+      { emailAddress: { address: "cc2@example.com" } },
+    ]);
+    expect(result.message.bccRecipients).toEqual([
+      { emailAddress: { address: "bcc1@example.com" } },
+      { emailAddress: { address: "bcc2@example.com" } },
+    ]);
+  });
 });
 
 describe("formatGraphRecipients", () => {
@@ -114,6 +160,12 @@ describe("formatGraphRecipients", () => {
     const result = proto.formatGraphRecipients("Bob.Smith+tag@sub.domain.com");
 
     expect(result[0].emailAddress.address).toBe("Bob.Smith+tag@sub.domain.com");
+  });
+
+  it("maps an array of emails to Graph recipient format", () => {
+    const result = proto.formatGraphRecipients(["a@b.com", "c@d.com"]);
+
+    expect(result).toEqual([{ emailAddress: { address: "a@b.com" } }, { emailAddress: { address: "c@d.com" } }]);
   });
 });
 
