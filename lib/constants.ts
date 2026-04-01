@@ -15,3 +15,29 @@ export const TRIGGER_TO_EVENT: Record<string, string> = {
   INSERT: "CREATE",
   UPDATE: "UPDATE",
 };
+
+/**
+ * All string tokens the condition evaluator knows how to handle.
+ * Used by validateCondition() to reject unsupported operators at startup.
+ */
+export const SUPPORTED_CONDITION_TOKENS = new Set([
+  // comparison operators (handled by compareValues)
+  "=",
+  "==",
+  "!=",
+  "<>",
+  ">",
+  "<",
+  ">=",
+  "<=",
+  // special operators (handled by evaluateComparison)
+  "is",
+  "in",
+  "between",
+  // logical connectors
+  "and",
+  "or",
+  // keywords used in is [not] null
+  "not",
+  "null",
+]);

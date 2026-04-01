@@ -1,4 +1,5 @@
 import cds from "@sap/cds";
+import { SUPPORTED_CONDITION_TOKENS } from "./constants.js";
 
 const LOG = cds.log("email");
 
@@ -156,17 +157,45 @@ function evaluateXpr(xpr: Token[], data: Record<string, unknown>): boolean {
 }
 
 /**
+ * Collects all string tokens from a parsed CDS expression tree.
+ * These are the operators and keywords (e.g., '=', 'and', 'is', 'like').
+ */
+function collectStringTokens(tokens: Token[]): string[] {
+  const result: string[] = [];
+  for (const token of tokens) {
+    if (typeof token === "string") {
+      result.push(token);
+    } else if (isXpr(token)) {
+      result.push(...collectStringTokens(token.xpr));
+    }
+  }
+  return result;
+}
+
+/**
  * Validates a CDS condition expression at startup.
- * Throws if the condition cannot be parsed — fail early and loud.
+ * Throws if the condition cannot be parsed or contains unsupported operators.
  */
 export function validateCondition(condition: string | undefined, entityName: string): void {
   if (!condition) return;
 
+  let parsed: { xpr?: Token[] };
   try {
-    cds.parse.expr(condition);
+    parsed = cds.parse.expr(condition) as { xpr?: Token[] };
   } catch (err) {
     throw new Error(
       `Invalid @email.condition on ${entityName}: '${condition}' — ${err instanceof Error ? err.message : err}`,
+    );
+  }
+
+  if (!parsed?.xpr) return;
+
+  const stringTokens = collectStringTokens(parsed.xpr);
+  const unsupported = stringTokens.filter((t) => !SUPPORTED_CONDITION_TOKENS.has(t));
+  if (unsupported.length > 0) {
+    const unique = [...new Set(unsupported)];
+    throw new Error(
+      `Unsupported operator(s) in @email.condition on ${entityName}: ${unique.map((o) => `'${o}'`).join(", ")} — condition: '${condition}'`,
     );
   }
 }

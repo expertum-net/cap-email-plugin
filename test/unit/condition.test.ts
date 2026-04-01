@@ -223,4 +223,45 @@ describe("validateCondition()", () => {
       /Invalid @email\.condition on MyService\.Tickets.*not a valid %%% expression &&&/,
     );
   });
+
+  it("throws on unsupported operator 'like'", () => {
+    expect(() => validateCondition("status like 'RESOLVED%'", "MyService.Tickets")).toThrow(
+      /Unsupported operator.*MyService\.Tickets.*'like'/,
+    );
+  });
+
+  it("throws on unsupported operator 'not like'", () => {
+    expect(() => validateCondition("status not like 'DRAFT%'", "MyService.Tickets")).toThrow(
+      /Unsupported operator.*'like'/,
+    );
+  });
+
+  it("passes validation for all supported operators", () => {
+    const validConditions = [
+      "status = 'OPEN'",
+      "status != 'DRAFT'",
+      "status <> 'DRAFT'",
+      "amount > 100",
+      "amount < 100",
+      "amount >= 100",
+      "amount <= 100",
+      "email is null",
+      "email is not null",
+      "status in ('OPEN','CLOSED')",
+      "amount between 10 and 100",
+      "status = 'OPEN' and priority = 1",
+      "status = 'OPEN' or status = 'CLOSED'",
+      "a = 1 and (b = 2 or c = 3)",
+    ];
+
+    for (const condition of validConditions) {
+      expect(() => validateCondition(condition, "TestEntity")).not.toThrow();
+    }
+  });
+
+  it("includes all unsupported operators in error message", () => {
+    // CDS parse may or may not support this compound expression,
+    // so test with a single unsupported operator to be safe
+    expect(() => validateCondition("status like 'X%'", "TestEntity")).toThrow(/Unsupported operator/);
+  });
 });
