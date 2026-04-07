@@ -12,7 +12,10 @@ export function parseEmailAnnotation(entity: cds.linked.classes.entity): EmailAn
   const flatEnabled = entityAny[`${ANNOTATION_PREFIX}.enabled`] as boolean | undefined;
 
   const enabled = objectAnnotation?.enabled ?? flatEnabled ?? EMAIL_DEFAULTS.enabled;
-  if (!enabled) return null;
+  if (!enabled) {
+    LOG.debug(`Entity ${entity.name}: @email not enabled — skipping`);
+    return null;
+  }
 
   const parts = entity.name.split(".");
   const entityName = parts[parts.length - 1];
@@ -52,10 +55,14 @@ export function parseEmailAnnotation(entity: cds.linked.classes.entity): EmailAn
 
   const template = objectAnnotation?.template ?? flat.template ?? EMAIL_DEFAULTS.template;
 
-  return {
+  const config = {
     ...merged,
     template: template === EMAIL_DEFAULTS.template ? entityName : template,
   };
+
+  LOG.debug(`Parsed @email config for ${entity.name}:`, config);
+
+  return config;
 }
 
 function normalizeRecipientList(value: unknown, field: string, entityName: string): string[] {
@@ -75,10 +82,12 @@ function normalizeRecipientList(value: unknown, field: string, entityName: strin
 }
 
 export async function registerEmailHandlers() {
+  LOG.debug("Connecting to email service");
   const emailService = (await cds.connect.to("email")) as IEmailService;
 
   for (const srv of Object.values(cds.services)) {
     if (!(srv instanceof cds.ApplicationService)) continue;
+    LOG.debug(`Scanning service '${srv.name}' for @email annotations`);
 
     for (const entity of Object.values(srv.entities)) {
       try {
