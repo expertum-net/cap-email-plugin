@@ -157,6 +157,8 @@ lib/plugin.ts          → Core logic; attaches after handlers for @email entiti
 lib/basic.ts           → Base EmailService class (extends cds.Service)
 lib/graph-mail.ts      → Microsoft Graph implementation
 lib/template-engine.ts → Template loading and {{placeholder}} rendering
+lib/condition.ts       → CDS condition parsing and runtime evaluation
+lib/entities.ts        → Typed entity access with runtime enum resolution
 ```
 
 ## Development
