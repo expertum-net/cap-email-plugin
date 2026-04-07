@@ -162,6 +162,8 @@ function evaluateXpr(xpr: Token[], data: Record<string, unknown>): boolean {
 export function validateCondition(condition: string | undefined, entityName: string): void {
   if (!condition) return;
 
+  LOG.debug(`Validating condition for ${entityName}: '${condition}'`);
+
   try {
     cds.parse.expr(condition);
   } catch (err) {
@@ -184,7 +186,9 @@ export function evaluateCondition(condition: string | undefined, data: Record<st
   try {
     const parsed = cds.parse.expr(condition) as { xpr?: Token[] };
     if (!parsed?.xpr) return true;
-    return evaluateXpr(parsed.xpr, data);
+    const result = evaluateXpr(parsed.xpr, data);
+    LOG.debug(`Condition '${condition}' evaluated to ${result}`);
+    return result;
   } catch (err) {
     LOG.error(`Failed to parse condition '${condition}':`, err);
     return false;
