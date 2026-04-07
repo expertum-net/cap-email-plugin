@@ -42,6 +42,8 @@ C4Container
         Container(graphService, "lib/graph-mail.ts", "TypeScript/ESM", "GraphMailService extending EmailService. Sends emails via Microsoft Graph API with retry logic")
         Container(templateEngine, "lib/template-engine.ts", "TypeScript/ESM", "Loads HTML templates from implementer's project, renders {{placeholder}} substitution")
         Container(types, "lib/types.ts", "TypeScript/ESM", "Interfaces, types, and EMAIL_DEFAULTS for annotation config and payloads")
+        Container(condition, "lib/condition.ts", "TypeScript/ESM", "CDS condition parsing (cds.parse.expr) and runtime evaluation against entity data")
+        Container(entities, "lib/entities.ts", "TypeScript/ESM", "Typed entity access for plugin-owned CDS entities with runtime enum resolution")
         Container(constants, "lib/constants.ts", "TypeScript/ESM", "All constants: patterns, annotation prefix, retry config, trigger mappings")
         ContainerDb(emailLogCds, "db/email-log.cds", "CDS", "Plugin-owned EmailLog entity (cuid, managed) tracking send status, errors")
     }
@@ -55,6 +57,9 @@ C4Container
     Rel(cdsPlugin, pluginModule, "Calls registerEmailHandlers()")
     Rel(pluginModule, basicService, "Calls registerHandlers() on EmailService")
     Rel(basicService, templateEngine, "loadTemplate() / renderTemplate()")
+    Rel(basicService, condition, "evaluateCondition()")
+    Rel(basicService, entities, "emailEntities()")
+    Rel(pluginModule, condition, "validateCondition()")
     Rel(basicService, db, "INSERT into EmailLog")
     Rel(graphService, graphApi, "POST /users/{from}/sendMail")
     Rel(graphService, basicService, "Extends, calls super.sendEmail()")
@@ -107,7 +112,6 @@ classDiagram
         +options: GraphMailOptions
         -from: string
         -graphApi: cds.Service
-        +registerHandlers(srv, entity, config): void
         +init(): Promise~void~
         +sendEmail(payload: EmailPayload): Promise~void~
         +buildGraphPayload(payload: EmailPayload): GraphPayload
@@ -534,6 +538,8 @@ flowchart TD
         BASIC["lib/basic.ts<br><i>EmailService base class</i>"]
         GRAPH["lib/graph-mail.ts<br><i>GraphMailService subclass</i>"]
         TEMPLATE["lib/template-engine.ts<br><i>Template loading & rendering</i>"]
+        CONDITION["lib/condition.ts<br><i>CDS condition parsing & evaluation</i>"]
+        ENTITIES["lib/entities.ts<br><i>Typed entity access & enum resolution</i>"]
         TYPES["lib/types.ts<br><i>Interfaces, EMAIL_DEFAULTS</i>"]
         CONSTANTS["lib/constants.ts<br><i>All constants</i>"]
     end
@@ -555,20 +561,25 @@ flowchart TD
     CDS_PLUGIN -->|"imports registerEmailHandlers()"| PLUGIN
     CDS_PLUGIN -->|"imports cds"| SAP_CDS
 
+    PLUGIN -->|"imports validateCondition"| CONDITION
     PLUGIN -->|"imports ANNOTATION_PREFIX"| CONSTANTS
     PLUGIN -->|"imports EmailAnnotationConfig,<br>IEmailService, EMAIL_DEFAULTS"| TYPES
     PLUGIN -->|"imports cds"| SAP_CDS
 
+    TYPES -->|"imports type EmailLog"| ENTITIES
+    ENTITIES -->|"imports cds"| SAP_CDS
+    CONDITION -->|"imports cds"| SAP_CDS
+
     BASIC -->|"imports loadTemplate,<br>renderTemplate"| TEMPLATE
+    BASIC -->|"imports evaluateCondition"| CONDITION
+    BASIC -->|"imports emailEntities,<br>type EmailLog"| ENTITIES
     BASIC -->|"imports EMAIL_PATTERN,<br>TRIGGER_TO_EVENT"| CONSTANTS
     BASIC -->|"imports EmailAnnotationConfig,<br>EmailPayload, IEmailService"| TYPES
-    BASIC -->|"imports EmailLog"| CDS_MODELS
     BASIC -->|"extends cds.Service"| SAP_CDS
 
     GRAPH -->|"extends EmailService"| BASIC
     GRAPH -->|"imports DEFAULT_RETRY_ATTEMPTS,<br>RETRYABLE_STATUS_CODES"| CONSTANTS
     GRAPH -->|"imports EmailPayload,<br>GraphMailOptions, etc."| TYPES
-    GRAPH -->|"imports EmailLog"| CDS_MODELS
     GRAPH -->|"imports cds"| SAP_CDS
 
     TEMPLATE -->|"imports PLACEHOLDER_PATTERN,<br>TEMPLATE_DIR, TEMPLATE_EXT"| CONSTANTS
@@ -576,9 +587,12 @@ flowchart TD
     TEMPLATE -->|"imports readFile"| NODE_FS
     TEMPLATE -->|"imports path"| NODE_PATH
 
+    ENTITIES -->|"imports type EmailLog"| CDS_MODELS
     CDS_MODELS -.->|"generated from"| EMAIL_LOG_CDS
 
     style CDS_PLUGIN fill:#4a90d9,color:#fff
+    style CONDITION fill:#9370db,color:#fff
+    style ENTITIES fill:#808080,color:#fff
     style PLUGIN fill:#7b68ee,color:#fff
     style BASIC fill:#3cb371,color:#fff
     style GRAPH fill:#ff8c00,color:#fff
