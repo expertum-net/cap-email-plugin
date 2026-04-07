@@ -57,12 +57,19 @@ export default class EmailService extends cds.Service implements IEmailService {
     req: cds.Request,
   ): Promise<EmailPayload | null> {
     const to = this.resolveRecipient(config, data, req);
-    if (!to || to.length === 0) return null;
+    if (!to || to.length === 0) {
+      LOG.debug(`No recipient resolved for ${entity.name} — skipping email`);
+      return null;
+    }
+
+    LOG.debug(`Resolved recipient(s) for ${entity.name}:`, to);
 
     const templateContent = await loadTemplate(config.template);
     const body = renderTemplate(templateContent, data);
     const subject = this.resolveSubject(config, data);
     const entityKey = this.resolveEntityKey(entity, data);
+
+    LOG.debug(`Prepared email for ${entity.name} [${entityKey}]: subject="${subject}", to=${to.join(", ")}`);
 
     return {
       from: this.from,
@@ -84,6 +91,7 @@ export default class EmailService extends cds.Service implements IEmailService {
   ): string[] | null {
     // Static recipient — already validated and normalized to string[] by parseEmailAnnotation
     if (config.recipient) {
+      LOG.debug("Using static recipient from annotation");
       return config.recipient;
     }
 
@@ -111,6 +119,7 @@ export default class EmailService extends cds.Service implements IEmailService {
       return null;
     }
 
+    LOG.debug(`Resolved recipient from ${source}: '${recipient}'`);
     return [recipient];
   }
 
@@ -138,7 +147,9 @@ export default class EmailService extends cds.Service implements IEmailService {
       subject: payload.subject,
     };
     try {
+      LOG.debug(`Dispatching email for ${payload.entityName} [${payload.entityKey}]`);
       await this.dispatchEmail(payload);
+      LOG.info(`Email sent successfully for ${payload.entityName} [${payload.entityKey}]`);
       await this.logEmail({
         ...logFields,
         status: EmailLog.status.sent,
@@ -160,6 +171,7 @@ export default class EmailService extends cds.Service implements IEmailService {
   async logEmail(entry: EmailLog): Promise<void> {
     const { EmailLog } = emailEntities();
     try {
+      LOG.debug(`Writing EmailLog entry: status=${entry.status}, entity=${entry.entityName}`);
       await INSERT.into(EmailLog).entries(entry);
     } catch (err) {
       LOG.error("Failed to write email log:", err);
