@@ -29,8 +29,10 @@ export default class GraphMailService extends EmailService implements IGraphMail
   }
 
   async dispatchEmail(payload: EmailPayload): Promise<void> {
+    LOG.debug(`Dispatching via Graph API: from=${this.from}, to=${payload.to.join(", ")}`);
     const graphPayload = this.buildGraphPayload(payload);
     await this.sendWithRetry(this.from, graphPayload);
+    LOG.debug("Graph API dispatch completed successfully");
   }
 
   buildGraphPayload(payload: EmailPayload): GraphPayload {
@@ -61,9 +63,11 @@ export default class GraphMailService extends EmailService implements IGraphMail
     const maxRetries = this.options?.retryAttempts ?? DEFAULT_RETRY_ATTEMPTS;
 
     try {
+      LOG.debug(`Sending POST /v1.0/users/${from}/sendMail (attempt ${attempt + 1}/${maxRetries + 1})`);
       await this.graphApi.send("POST", `/v1.0/users/${from}/sendMail`, payload);
     } catch (err: unknown) {
       const status = (err as { status?: number }).status;
+      LOG.debug(`Graph API request failed: status=${status ?? "unknown"}, attempt=${attempt + 1}/${maxRetries + 1}`);
 
       if (status && RETRYABLE_STATUS_CODES.includes(status) && attempt < maxRetries) {
         const maxDelay = this.options?.maxRetryDelay ?? DEFAULT_MAX_RETRY_DELAY;
@@ -73,6 +77,7 @@ export default class GraphMailService extends EmailService implements IGraphMail
         return this.sendWithRetry(from, payload, attempt + 1);
       }
 
+      LOG.error(`Graph API request failed permanently: status=${status ?? "unknown"}`, err);
       throw err;
     }
   }

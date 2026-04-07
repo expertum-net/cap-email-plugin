@@ -9,7 +9,7 @@ import {
   TEMPLATE_EXT,
 } from "./constants.js";
 
-const LOG = cds.log("email-template");
+const LOG = cds.log("email:template");
 
 export function resolveTemplatePath(templateName: string): string {
   if (!SAFE_TEMPLATE_NAME_PATTERN.test(templateName)) {
@@ -34,7 +34,9 @@ export async function loadTemplate(templateName: string): Promise<string> {
   LOG.debug("Loading template from:", templatePath);
 
   try {
-    return await readTemplateFile(templatePath, `"${templateName}"`);
+    const content = await readTemplateFile(templatePath, `"${templateName}"`);
+    LOG.info(`Loaded template "${templateName}" from ${templatePath}`);
+    return content;
   } catch {
     LOG.warn(
       `Template "${templateName}${TEMPLATE_EXT}" not found at ${templatePath} — falling back to default template`,
@@ -65,6 +67,6 @@ function formatValue(value: unknown): string {
 }
 
 export function renderTemplate(template: string, data: Record<string, unknown>): string {
-  LOG.debug("Rendering template with data:", data);
+  LOG.debug("Rendering template with data keys:", Object.keys(data));
   return template.replace(PLACEHOLDER_PATTERN, (_, key) => formatValue(data[key]));
 }
