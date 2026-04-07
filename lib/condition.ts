@@ -1,6 +1,6 @@
 import cds from "@sap/cds";
 
-const LOG = cds.log("email");
+const LOG = cds.log("email:condition");
 
 type RefToken = { ref: string[] };
 type ValToken = { val: unknown };

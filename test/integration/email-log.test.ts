@@ -89,7 +89,7 @@ describe("EmailService.logEmail", () => {
     await emailService.logEmail(entry);
     const [log] = await SELECT.from(EmailLog);
 
-    const LOG = cds.log("email");
+    const LOG = cds.log("email:basic");
     const originalError = LOG.error;
     const errorCalls: unknown[][] = [];
     LOG.error = ((...args: unknown[]) => {

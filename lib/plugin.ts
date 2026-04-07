@@ -3,7 +3,7 @@ import { ANNOTATION_PREFIX, EMAIL_PATTERN } from "./constants.js";
 import { validateCondition } from "./condition.js";
 import { type EmailAnnotationConfig, type IEmailService, EMAIL_DEFAULTS } from "./types.js";
 
-const LOG = cds.log("email");
+const LOG = cds.log("email:plugin");
 
 export function parseEmailAnnotation(entity: cds.linked.classes.entity): EmailAnnotationConfig | null {
   const entityAny = entity as unknown as Record<string, unknown>;

@@ -5,7 +5,7 @@ import { EMAIL_PATTERN, TRIGGER_TO_EVENT } from "./constants.js";
 import { loadTemplate, renderTemplate } from "./template-engine.js";
 import type { EmailAnnotationConfig, EmailPayload, IEmailService } from "./types.js";
 
-const LOG = cds.log("email");
+const LOG = cds.log("email:basic");
 
 export default class EmailService extends cds.Service implements IEmailService {
   protected from: string = "";
