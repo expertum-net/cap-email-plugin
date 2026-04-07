@@ -118,7 +118,7 @@ describe("loadTemplate", () => {
   });
 
   it("logs warning with template path when falling back to default", async () => {
-    const LOG = cds.log("email-template");
+    const LOG = cds.log("email:template");
     const originalWarn = LOG.warn;
     const warnCalls: unknown[][] = [];
     LOG.warn = ((...args: unknown[]) => {

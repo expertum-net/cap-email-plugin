@@ -19,7 +19,7 @@
       "levels": {
         "email": "debug",
         "email:graph": "debug",
-        "email-template": "debug"
+        "email:template": "debug"
       }
     },
     "requires": {
