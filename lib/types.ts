@@ -61,7 +61,9 @@ export interface EmailAnnotationConfig {
   recipient: string[] | undefined;
   recipientField: string | undefined;
   cc: string[] | undefined;
+  ccField: string | undefined;
   bcc: string[] | undefined;
+  bccField: string | undefined;
   subject: string | undefined;
   rollback: boolean;
   saveToSentItems: boolean;
@@ -75,7 +77,9 @@ export const EMAIL_DEFAULTS: EmailAnnotationConfig = {
   recipient: undefined,
   recipientField: undefined,
   cc: undefined,
+  ccField: undefined,
   bcc: undefined,
+  bccField: undefined,
   subject: undefined,
   rollback: false,
   saveToSentItems: true,
