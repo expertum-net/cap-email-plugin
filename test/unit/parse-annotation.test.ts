@@ -52,7 +52,9 @@ describe("parseEmailAnnotation", () => {
         recipient: undefined,
         recipientField: undefined,
         cc: undefined,
+        ccField: undefined,
         bcc: undefined,
+        bccField: undefined,
         subject: undefined,
         rollback: false,
         saveToSentItems: true,
@@ -408,6 +410,72 @@ describe("parseEmailAnnotation", () => {
           }),
         ),
       ).toThrow("Empty @email.bcc");
+    });
+  });
+
+  describe("cc / ccField XOR validation", () => {
+    it("accepts ccField alone", () => {
+      const result = parseEmailAnnotation(
+        fakeEntity("test.Orders", {
+          "@email": { enabled: true, ccField: "managerEmail" },
+        }),
+      );
+      expect(result).toHaveProperty("ccField", "managerEmail");
+      expect(result).toHaveProperty("cc", undefined);
+    });
+
+    it("throws when both cc and ccField are set", () => {
+      expect(() =>
+        parseEmailAnnotation(
+          fakeEntity("test.Orders", {
+            "@email": { enabled: true, cc: "a@b.com", ccField: "managerEmail" },
+          }),
+        ),
+      ).toThrow("mutually exclusive");
+    });
+
+    it("throws when cc and ccField are set across object and flat annotations", () => {
+      expect(() =>
+        parseEmailAnnotation(
+          fakeEntity("test.Orders", {
+            "@email": { enabled: true, cc: "a@b.com" },
+            "@email.ccField": "managerEmail",
+          }),
+        ),
+      ).toThrow("mutually exclusive");
+    });
+  });
+
+  describe("bcc / bccField XOR validation", () => {
+    it("accepts bccField alone", () => {
+      const result = parseEmailAnnotation(
+        fakeEntity("test.Orders", {
+          "@email": { enabled: true, bccField: "auditEmail" },
+        }),
+      );
+      expect(result).toHaveProperty("bccField", "auditEmail");
+      expect(result).toHaveProperty("bcc", undefined);
+    });
+
+    it("throws when both bcc and bccField are set", () => {
+      expect(() =>
+        parseEmailAnnotation(
+          fakeEntity("test.Orders", {
+            "@email": { enabled: true, bcc: "a@b.com", bccField: "auditEmail" },
+          }),
+        ),
+      ).toThrow("mutually exclusive");
+    });
+
+    it("throws when bcc and bccField are set across object and flat annotations", () => {
+      expect(() =>
+        parseEmailAnnotation(
+          fakeEntity("test.Orders", {
+            "@email": { enabled: true, bcc: "a@b.com" },
+            "@email.bccField": "auditEmail",
+          }),
+        ),
+      ).toThrow("mutually exclusive");
     });
   });
 });
