@@ -137,7 +137,7 @@ export default class EmailService extends cds.Service implements IEmailService {
 
     const value = data[field];
     if (typeof value !== "string" || value.length === 0) {
-      LOG.warn(`No value resolved from ${fieldName} '${field}' — skipping`);
+      LOG.error(`No value resolved from ${fieldName} '${field}' — skipping`);
       return undefined;
     }
 
