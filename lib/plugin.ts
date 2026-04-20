@@ -41,6 +41,14 @@ export function parseEmailAnnotation(entity: cds.linked.classes.entity): EmailAn
     );
   }
 
+  if (merged.cc && merged.ccField) {
+    throw new Error(`Entity ${entity.name} specifies both 'cc' and 'ccField' — they are mutually exclusive.`);
+  }
+
+  if (merged.bcc && merged.bccField) {
+    throw new Error(`Entity ${entity.name} specifies both 'bcc' and 'bccField' — they are mutually exclusive.`);
+  }
+
   if (merged.recipient !== undefined) {
     merged.recipient = normalizeRecipientList(merged.recipient, "recipient", entity.name);
   }

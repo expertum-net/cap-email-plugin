@@ -71,11 +71,14 @@ export default class EmailService extends cds.Service implements IEmailService {
 
     LOG.debug(`Prepared email for ${entity.name} [${entityKey}]: subject="${subject}", to=${to.join(", ")}`);
 
+    const cc = this.resolveFieldRecipients(config.cc, config.ccField, "ccField", data);
+    const bcc = this.resolveFieldRecipients(config.bcc, config.bccField, "bccField", data);
+
     return {
       from: this.from,
       to,
-      cc: config.cc,
-      bcc: config.bcc,
+      cc,
+      bcc,
       subject,
       body,
       entityName: entity.name,
@@ -121,6 +124,30 @@ export default class EmailService extends cds.Service implements IEmailService {
 
     LOG.debug(`Resolved recipient from ${source}: '${recipient}'`);
     return [recipient];
+  }
+
+  protected resolveFieldRecipients(
+    staticList: string[] | undefined,
+    field: string | undefined,
+    fieldName: string,
+    data: Record<string, unknown>,
+  ): string[] | undefined {
+    if (staticList) return staticList;
+    if (!field) return undefined;
+
+    const value = data[field];
+    if (typeof value !== "string" || value.length === 0) {
+      LOG.error(`No value resolved from ${fieldName} '${field}' — skipping`);
+      return undefined;
+    }
+
+    if (!EMAIL_PATTERN.test(value)) {
+      LOG.warn(`Invalid email format from ${fieldName} '${field}': '${value}' — skipping`);
+      return undefined;
+    }
+
+    LOG.debug(`Resolved ${fieldName} '${field}': '${value}'`);
+    return [value];
   }
 
   protected resolveSubject(config: EmailAnnotationConfig, data: Record<string, unknown>): string {
