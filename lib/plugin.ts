@@ -1,6 +1,6 @@
 import cds from "@sap/cds";
 import { ANNOTATION_PREFIX, EMAIL_PATTERN } from "./constants.js";
-import { validateCondition } from "./condition.js";
+import { parseCondition, validateCondition } from "./condition.js";
 import { type EmailAnnotationConfig, type IEmailService, EMAIL_DEFAULTS } from "./types.js";
 
 const LOG = cds.log("email:plugin");
@@ -57,6 +57,7 @@ export function parseEmailAnnotation(entity: cds.linked.classes.entity): EmailAn
 
   const config = {
     ...merged,
+    conditionAst: parseCondition(merged.condition),
     template: template === EMAIL_DEFAULTS.template ? entityName : template,
   };
 

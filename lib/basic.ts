@@ -32,7 +32,7 @@ export default class EmailService extends cds.Service implements IEmailService {
           }
 
           try {
-            if (!evaluateCondition(config.condition, data)) {
+            if (!evaluateCondition(config.conditionAst, data)) {
               LOG.info(`Condition not met for ${entity.name} — skipping email`);
               continue;
             }
