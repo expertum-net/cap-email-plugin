@@ -1,13 +1,11 @@
-import cds from "@sap/cds";
-import { evaluateCondition as evaluateAst, validateCondition, type ConditionAst } from "../../lib/condition.js";
+import { evaluateCondition as evaluateAst, parseCondition, validateCondition } from "../../lib/condition.js";
 
 /**
  * Test helper: parses a condition string into the AST that the plugin caches
  * at startup, then evaluates it — mirroring the runtime parse-once/evaluate-many flow.
  */
 function evaluateCondition(condition: string | undefined, data: Record<string, unknown>): boolean {
-  const ast = condition ? (cds.parse.expr(condition) as ConditionAst) : undefined;
-  return evaluateAst(ast, data);
+  return evaluateAst(parseCondition(condition), data);
 }
 
 describe("evaluateCondition()", () => {
@@ -196,20 +194,30 @@ describe("evaluateCondition()", () => {
 });
 
 describe("validateCondition()", () => {
-  it("returns undefined when condition is undefined", () => {
-    expect(validateCondition(undefined, "TestEntity")).toBeUndefined();
+  it("does nothing when condition is undefined", () => {
+    expect(() => validateCondition(undefined, "TestEntity")).not.toThrow();
   });
 
-  it("returns the parsed AST for valid condition syntax", () => {
-    const ast = validateCondition("status = 'RESOLVED'", "TestEntity");
-    expect(ast?.xpr).toBeDefined();
-    expect(evaluateAst(ast, { status: "RESOLVED" })).toBe(true);
-    expect(evaluateAst(ast, { status: "OPEN" })).toBe(false);
+  it("does nothing for valid condition syntax", () => {
+    expect(() => validateCondition("status = 'RESOLVED'", "TestEntity")).not.toThrow();
   });
 
   it("throws on invalid condition syntax with entity name", () => {
     expect(() => validateCondition("not a valid %%% expression &&&", "MyService.Tickets")).toThrow(
       /Invalid @email\.condition on MyService\.Tickets.*not a valid %%% expression &&&/,
     );
+  });
+});
+
+describe("parseCondition()", () => {
+  it("returns undefined when condition is undefined", () => {
+    expect(parseCondition(undefined)).toBeUndefined();
+  });
+
+  it("returns a cached AST that evaluates correctly", () => {
+    const ast = parseCondition("status = 'RESOLVED'");
+    expect(ast?.xpr).toBeDefined();
+    expect(evaluateAst(ast, { status: "RESOLVED" })).toBe(true);
+    expect(evaluateAst(ast, { status: "OPEN" })).toBe(false);
   });
 });

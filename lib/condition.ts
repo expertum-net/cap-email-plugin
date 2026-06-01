@@ -159,24 +159,33 @@ function evaluateXpr(xpr: Token[], data: Record<string, unknown>): boolean {
 }
 
 /**
- * Parses and validates a CDS condition expression at startup.
+ * Validates a CDS condition expression at startup.
  * Throws if the condition cannot be parsed — fail early and loud.
- * Returns the parsed AST so it can be cached and reused on every event,
- * or undefined when there is no condition (always send).
  */
-export function validateCondition(condition: string | undefined, entityName: string): ConditionAst | undefined {
-  if (!condition) return undefined;
+export function validateCondition(condition: string | undefined, entityName: string): void {
+  if (!condition) return;
 
   LOG.debug(`Validating condition for ${entityName}: '${condition}'`);
 
   try {
-    const parsed = cds.parse.expr(condition) as Partial<ConditionAst>;
-    return parsed?.xpr ? { xpr: parsed.xpr } : undefined;
+    cds.parse.expr(condition);
   } catch (err) {
     throw new Error(
       `Invalid @email.condition on ${entityName}: '${condition}' — ${err instanceof Error ? err.message : err}`,
     );
   }
+}
+
+/**
+ * Parses a (previously validated) condition string into its AST form so it can
+ * be cached at startup and reused on every event. Returns undefined when there
+ * is no condition (always send).
+ */
+export function parseCondition(condition: string | undefined): ConditionAst | undefined {
+  if (!condition) return undefined;
+
+  const parsed = cds.parse.expr(condition) as Partial<ConditionAst>;
+  return parsed?.xpr ? { xpr: parsed.xpr } : undefined;
 }
 
 /**
