@@ -1,5 +1,14 @@
 import cds from "@sap/cds";
-import { evaluateCondition, validateCondition } from "../../lib/condition.js";
+import { evaluateCondition as evaluateAst, validateCondition, type ConditionAst } from "../../lib/condition.js";
+
+/**
+ * Test helper: parses a condition string into the AST that the plugin caches
+ * at startup, then evaluates it — mirroring the runtime parse-once/evaluate-many flow.
+ */
+function evaluateCondition(condition: string | undefined, data: Record<string, unknown>): boolean {
+  const ast = condition ? (cds.parse.expr(condition) as ConditionAst) : undefined;
+  return evaluateAst(ast, data);
+}
 
 describe("evaluateCondition()", () => {
   describe("no condition (always send)", () => {
@@ -184,38 +193,18 @@ describe("evaluateCondition()", () => {
       expect(evaluateCondition("a = 1 and (b = 2 or c = 3)", { a: 1, b: 0, c: 0 })).toBe(false);
     });
   });
-
-  describe("error handling", () => {
-    it("returns false for malformed condition", () => {
-      expect(evaluateCondition("not a valid %%% expression &&&", { status: "OPEN" })).toBe(false);
-    });
-
-    it("logs error via cds.log on parse failure", () => {
-      const LOG = cds.log("email:condition");
-      const originalError = LOG.error;
-      const errorCalls: unknown[][] = [];
-      LOG.error = ((...args: unknown[]) => {
-        errorCalls.push(args);
-      }) as typeof LOG.error;
-
-      try {
-        evaluateCondition("not a valid %%% expression &&&", { status: "OPEN" });
-        expect(errorCalls).toHaveLength(1);
-        expect(errorCalls[0][0]).toContain("Failed to parse condition");
-      } finally {
-        LOG.error = originalError;
-      }
-    });
-  });
 });
 
 describe("validateCondition()", () => {
-  it("does nothing when condition is undefined", () => {
-    expect(() => validateCondition(undefined, "TestEntity")).not.toThrow();
+  it("returns undefined when condition is undefined", () => {
+    expect(validateCondition(undefined, "TestEntity")).toBeUndefined();
   });
 
-  it("does nothing for valid condition syntax", () => {
-    expect(() => validateCondition("status = 'RESOLVED'", "TestEntity")).not.toThrow();
+  it("returns the parsed AST for valid condition syntax", () => {
+    const ast = validateCondition("status = 'RESOLVED'", "TestEntity");
+    expect(ast?.xpr).toBeDefined();
+    expect(evaluateAst(ast, { status: "RESOLVED" })).toBe(true);
+    expect(evaluateAst(ast, { status: "OPEN" })).toBe(false);
   });
 
   it("throws on invalid condition syntax with entity name", () => {

@@ -1,4 +1,5 @@
 import cds from "@sap/cds";
+import type { ConditionAst } from "./condition.js";
 import type { EmailLog } from "./entities.js";
 
 export interface EmailPayload {
@@ -58,6 +59,8 @@ export interface EmailAnnotationConfig {
   template: string;
   trigger: string[];
   condition: string | undefined;
+  /** Parsed condition AST, cached at startup to avoid re-parsing on every event. */
+  conditionAst?: ConditionAst;
   recipient: string[] | undefined;
   recipientField: string | undefined;
   cc: string[] | undefined;

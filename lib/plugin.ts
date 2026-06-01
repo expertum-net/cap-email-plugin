@@ -51,12 +51,13 @@ export function parseEmailAnnotation(entity: cds.linked.classes.entity): EmailAn
     merged.bcc = normalizeRecipientList(merged.bcc, "bcc", entity.name);
   }
 
-  validateCondition(merged.condition, entity.name);
+  const conditionAst = validateCondition(merged.condition, entity.name);
 
   const template = objectAnnotation?.template ?? flat.template ?? EMAIL_DEFAULTS.template;
 
   const config = {
     ...merged,
+    conditionAst,
     template: template === EMAIL_DEFAULTS.template ? entityName : template,
   };
 

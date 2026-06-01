@@ -6,7 +6,10 @@ type RefToken = { ref: string[] };
 type ValToken = { val: unknown };
 type XprToken = { xpr: Token[] };
 type ListToken = { list: ValToken[] };
-type Token = RefToken | ValToken | XprToken | ListToken | string;
+export type Token = RefToken | ValToken | XprToken | ListToken | string;
+
+/** A parsed CDS condition expression (the `xpr` form of `cds.parse.expr`). */
+export type ConditionAst = { xpr: Token[] };
 
 function isRef(token: Token): token is RefToken {
   return typeof token === "object" && "ref" in token;
@@ -156,16 +159,19 @@ function evaluateXpr(xpr: Token[], data: Record<string, unknown>): boolean {
 }
 
 /**
- * Validates a CDS condition expression at startup.
+ * Parses and validates a CDS condition expression at startup.
  * Throws if the condition cannot be parsed — fail early and loud.
+ * Returns the parsed AST so it can be cached and reused on every event,
+ * or undefined when there is no condition (always send).
  */
-export function validateCondition(condition: string | undefined, entityName: string): void {
-  if (!condition) return;
+export function validateCondition(condition: string | undefined, entityName: string): ConditionAst | undefined {
+  if (!condition) return undefined;
 
   LOG.debug(`Validating condition for ${entityName}: '${condition}'`);
 
   try {
-    cds.parse.expr(condition);
+    const parsed = cds.parse.expr(condition) as Partial<ConditionAst>;
+    return parsed?.xpr ? { xpr: parsed.xpr } : undefined;
   } catch (err) {
     throw new Error(
       `Invalid @email.condition on ${entityName}: '${condition}' — ${err instanceof Error ? err.message : err}`,
@@ -174,23 +180,15 @@ export function validateCondition(condition: string | undefined, entityName: str
 }
 
 /**
- * Evaluates a CDS condition expression against entity data.
+ * Evaluates a pre-parsed CDS condition AST against entity data.
  * Returns true if the condition is met (email should be sent).
  * Returns true if no condition is set (always send).
  * Returns false if the condition is not met (skip email).
- * On parse errors, logs a warning and returns false (skip email).
  */
-export function evaluateCondition(condition: string | undefined, data: Record<string, unknown>): boolean {
-  if (!condition) return true;
+export function evaluateCondition(ast: ConditionAst | undefined, data: Record<string, unknown>): boolean {
+  if (!ast?.xpr) return true;
 
-  try {
-    const parsed = cds.parse.expr(condition) as { xpr?: Token[] };
-    if (!parsed?.xpr) return true;
-    const result = evaluateXpr(parsed.xpr, data);
-    LOG.debug(`Condition '${condition}' evaluated to ${result}`);
-    return result;
-  } catch (err) {
-    LOG.error(`Failed to parse condition '${condition}':`, err);
-    return false;
-  }
+  const result = evaluateXpr(ast.xpr, data);
+  LOG.debug(`Condition evaluated to ${result}`);
+  return result;
 }
