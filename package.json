@@ -6,7 +6,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MVansteenhuyse/cap-email.git"
+    "url": "https://github.com/expertum-net/cap-email-plugin"
   },
   "main": "cds-plugin.js",
   "files": [
