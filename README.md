@@ -197,4 +197,4 @@ npx cds serve
 
 ## License
 
-[MIT](LICENSE)
+Copyright 2026 Expertum Group [Apache-2.0](LICENSE)

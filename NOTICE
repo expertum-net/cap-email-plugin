@@ -1,0 +1,38 @@
+Project: CAP Email Plugin
+Copyright 2026 Expertum Group
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this project except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+
+----------------------------------------------------------------------------
+Maintained by Expertum Group
+----------------------------------------------------------------------------
+This project is developed and maintained by Expertum Group and contributors.
+
+Contributions are welcome through pull requests submitted to the project's
+official repository.
+
+----------------------------------------------------------------------------
+Trademarks
+----------------------------------------------------------------------------
+Expertum Group, the CAP Email Plugin, and associated logos may be
+trademarks or registered trademarks of Expertum Group. Use of these
+trademarks does not imply endorsement by Expertum Group.
+
+Forks and derivative works may not be represented as official releases
+of CAP Email Plugin without prior written permission from Expertum Group.
+
+----------------------------------------------------------------------------
+Project Repository
+----------------------------------------------------------------------------
+Source code, documentation, issue tracking, and contribution guidelines are
+available at:
+
+https://github.com/expertum-net/cap-email-plugin
