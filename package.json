@@ -17,6 +17,9 @@
     "templates",
     "NOTICE"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "clean": "rm -f cds-plugin.js cds-plugin.js.map && rm -f lib/*.js lib/*.js.map",
