@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "SAP CAP plugin for annotation-driven email automation",
   "type": "module",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/expertum-net/cap-email-plugin"
@@ -14,7 +14,8 @@
     "index.cds",
     "lib/**/*.js",
     "db",
-    "templates"
+    "templates",
+    "NOTICE"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
