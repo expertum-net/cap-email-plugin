@@ -1,7 +1,5 @@
 # @expertum/cap-email-plugin
 
-> **Status:** POC
-
 A SAP CAP plugin that provides annotation-driven email automation for CAP entities. Emails are triggered on entity
 lifecycle events (INSERT, UPDATE) and dispatched via configurable email clients.
 
