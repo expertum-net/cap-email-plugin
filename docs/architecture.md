@@ -43,11 +43,13 @@ flowchart TB
         BASIC["basic.ts\nEmailService — base class"]
         GRAPH["graph-mail.ts\nGraphMailService — Graph API provider"]
         TE["template-engine.ts\nTemplate loading + rendering"]
+        COND["condition.ts\nCDS condition parsing + evaluation"]
     end
 
     subgraph shared ["Shared (lib/)"]
         TYPES["types.ts\nInterfaces + EMAIL_DEFAULTS"]
         CONST["constants.ts\nAll constants"]
+        ENT["entities.ts\nTyped entity access + enum resolution"]
     end
 
     subgraph data ["Data Layer"]
@@ -59,12 +61,16 @@ flowchart TB
     PL -->|"emailService.registerHandlers()"| BASIC
     BASIC -->|"extends"| GRAPH
     BASIC --> TE
+    BASIC --> COND
     BASIC --> TYPES
     BASIC --> CONST
+    BASIC --> ENT
     GRAPH --> TYPES
     GRAPH --> CONST
+    GRAPH --> ENT
     PL --> TYPES
     PL --> CONST
+    PL --> COND
     BASIC --> GEN
     GRAPH --> GEN
     GEN -.->|"generated from"| CDS
@@ -74,6 +80,8 @@ flowchart TB
     style BASIC fill:#3cb371,color:#fff
     style GRAPH fill:#ff8c00,color:#fff
     style TE fill:#cd5c5c,color:#fff
+    style COND fill:#9370db,color:#fff
+    style ENT fill:#808080,color:#fff
 ```
 
 ## Service Kind Resolution
@@ -114,8 +122,8 @@ flowchart LR
 
 ## Class Hierarchy
 
-Follows the `@cap-js/attachments` base/subclass pattern: the base class provides default handler registration and shared
-logic, subclasses override to add provider-specific behavior.
+Follows the `@cap-js/attachments` base/subclass pattern: the base class owns handler registration and shared logic,
+subclasses override `sendEmail()` to add provider-specific behavior then call `super.sendEmail()`.
 
 ```mermaid
 classDiagram
@@ -147,7 +155,6 @@ classDiagram
     class GraphMailService {
         -from: string
         -graphApi: cds.Service
-        +registerHandlers(srv, entity, config) void
         +init() Promise~void~
         +sendEmail(payload) Promise~void~
         +buildGraphPayload(payload) GraphPayload
@@ -160,17 +167,6 @@ classDiagram
     IEmailService <|-- IGraphMailService : extends
     EmailService <|-- GraphMailService : extends
 ```
-
-### Why subclasses override `registerHandlers()`
-
-This follows the `@cap-js/attachments` pattern where S3 and Azure each override `registerUpdateHandlers()` to register
-completely different event hooks on the ApplicationService. Each provider controls:
-
-- **Which events** to listen to (e.g., a batch provider might skip per-entity handlers entirely)
-- **What orchestration** to perform (e.g., skip template rendering for API-driven emails)
-- **What additional hooks** to register (e.g., `before` handlers for validation, webhook callbacks)
-
-The base class provides a sensible default. Subclasses override when they need different behavior.
 
 ## Boot Sequence
 
@@ -322,7 +318,7 @@ All `@email` properties have sensible defaults. `@email.enabled: true` is the on
 | `enabled`         | `false`        | Activate email automation for this entity                       |
 | `template`        | `{EntityName}` | Template file name (resolved to `email-templates/{name}.html`)  |
 | `trigger`         | `["INSERT"]`   | Lifecycle events: `INSERT`, `UPDATE`                            |
-| `condition`       | `undefined`    | Expression to evaluate before sending (not yet implemented)     |
+| `condition`       | `undefined`    | CDS expression evaluated against entity data before sending     |
 | `recipient`       | `undefined`    | Static recipient email (mutually exclusive with recipientField) |
 | `recipientField`  | `undefined`    | Entity field containing the recipient email                     |
 | `subject`         | `undefined`    | Subject line with `{{placeholder}}` support                     |
@@ -338,6 +334,8 @@ All `@email` properties have sensible defaults. `@email.enabled: true` is the on
 | `lib/basic.ts`           | `EmailService` — base class with handler registration, recipient resolution, template orchestration, email logging |
 | `lib/graph-mail.ts`      | `GraphMailService` — Microsoft Graph provider with retry logic                                                     |
 | `lib/template-engine.ts` | Template loading from implementer's `email-templates/` directory + `{{placeholder}}` rendering                     |
+| `lib/condition.ts`       | CDS condition parsing (`cds.parse.expr`) and runtime evaluation against entity data                                |
+| `lib/entities.ts`        | Typed entity access for plugin-owned CDS entities with runtime enum resolution                                     |
 | `lib/types.ts`           | All interfaces (`IEmailService`, `IGraphMailService`, `EmailPayload`, etc.) + `EMAIL_DEFAULTS`                     |
 | `lib/constants.ts`       | All constants (annotation prefix, patterns, retry config, trigger-to-event mapping)                                |
 | `db/email-log.cds`       | Plugin-owned `EmailLog` entity definition                                                                          |
