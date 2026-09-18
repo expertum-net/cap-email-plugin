@@ -85,6 +85,28 @@ In your application's `package.json`:
 The `graph` kind uses Microsoft Graph API via a BTP destination. Configure the destination with OAuth2ClientCredentials
 in your BTP subaccount.
 
+```jsonc
+{
+  "cds": {
+    "requires": {
+      "email": {
+        "kind": "graph",
+        "destination": "microsoft-graph",
+        "email": {
+          "from": "noreply@example.com",
+        },
+      },
+      "microsoft-graph": {
+        "kind": "rest",
+        "credentials": {
+          "destination": "your-ms-graph-btp-destination",
+        },
+      },
+    },
+  },
+}
+```
+
 ## Annotation Reference
 
 All `@email` properties have sensible defaults. Only specify what you need to override.
