@@ -1,6 +1,6 @@
 {
   "name": "@expertum/cap-email-plugin",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "SAP CAP plugin for annotation-driven email automation",
   "type": "module",
   "license": "Apache-2.0",
